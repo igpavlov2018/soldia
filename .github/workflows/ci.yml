@@ -1,0 +1,55 @@
+name: CI - Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install pyflakes
+          pip install -r requirements.txt || true
+
+      - name: Check syntax errors
+        run: python3 -m pyflakes . 2>&1 | grep -v "__pycache__" || true
+
+      - name: Check duplicate arguments
+        run: |
+          python3 -c "
+          import ast, os, sys
+          issues = []
+          for root, dirs, files in os.walk('.'):
+              dirs[:] = [d for d in dirs if d not in ['__pycache__', '.git']]
+              for fname in files:
+                  if not fname.endswith('.py'):
+                      continue
+                  path = os.path.join(root, fname)
+                  try:
+                      tree = ast.parse(open(path).read())
+                  except SyntaxError as e:
+                      issues.append(f'SYNTAX ERROR {path}:{e.lineno}: {e.msg}')
+                      continue
+                  for node in ast.walk(tree):
+                      if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                          args = [a.arg for a in node.args.args]
+                          for arg in set(args):
+                              if args.count(arg) > 1:
+                                  issues.append(f'DUPLICATE ARG {arg} in {path}:{node.lineno} {node.name}()')
+          if issues:
+              for i in issues: print(i)
+              sys.exit(1)
+          else:
+              print('OK - no critical errors found')
+          "
