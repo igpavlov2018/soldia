@@ -1,0 +1,4458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLDIA - Exponential Wealth Network</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Three.js для 3D Wave Pattern -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --neon-cyan: #00F0FF;
+            --neon-pink: #FF10F0;
+            --neon-purple: #B026FF;
+            --neon-yellow: #FFED4E;
+            --electric-blue: #0066FF;
+            --dark: #050505;
+            --dark-card: #0A0A0F;
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark);
+            color: white;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #0a0a1f 0%, #050515 50%, #000000 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* 3D Wave Canvas Container */
+        #wave3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-cyan);
+            animation: float 15s infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { 
+                transform: translateY(-100vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+        
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(5, 5, 5, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+        }
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes glowPulse {
+            0%, 100% { filter: drop-shadow(0 0 10px var(--neon-cyan)); }
+            50% { filter: drop-shadow(0 0 25px var(--neon-pink)); }
+        }
+        
+        /* Language Selector - rounded style like Connect Wallet */
+        .language-selector {
+            position: relative;
+        }
+        
+        .language-btn {
+            padding: 8px 16px;
+            background: rgba(0, 240, 255, 0.15);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 50px;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+        
+        .language-btn:hover {
+            background: rgba(0, 240, 255, 0.25);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 10px;
+            background: rgba(10, 10, 15, 0.95);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 5px;
+            padding: 10px 0;
+            min-width: 150px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+        }
+        
+        .language-dropdown.active {
+            display: block;
+        }
+        
+        .language-option {
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .language-option:hover {
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--neon-cyan);
+        }
+        
+        .connect-wallet {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, var(--electric-blue), var(--neon-purple));
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 102, 255, 0.5);
+            transition: all 0.3s;
+        }
+        
+        .connect-wallet::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+        
+        .connect-wallet:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+        
+        .connect-wallet:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 50px rgba(176, 38, 255, 0.8);
+        }
+        
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 140px 6% 80px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .hero-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: linear-gradient(90deg, rgba(0, 240, 255, 0.2), rgba(176, 38, 255, 0.2));
+            border: 1px solid var(--neon-cyan);
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        
+        .hero-title {
+            font-family: 'Orbitron', 'Exo 2', sans-serif;
+            font-size: clamp(50px, 9vw, 140px);
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+        }
+        
+        .hero-title .gradient-text {
+            background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 50%, var(--neon-pink) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% 200%;
+            animation: gradientFlow 5s ease infinite;
+            display: block;
+        }
+        
+        @keyframes gradientFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .hero-subtitle {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 700px;
+            margin-bottom: 60px;
+            line-height: 1.6;
+        }
+        
+        .tiers-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-top: 80px;
+        }
+        
+        .tier-card {
+            background: linear-gradient(165deg, rgba(10, 10, 15, 0.9), rgba(20, 20, 30, 0.9));
+            border: 2px solid;
+            border-radius: 20px;
+            padding: 40px 25px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .tier-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, var(--card-color), transparent 30%);
+            opacity: 0;
+            transition: opacity 0.4s;
+            animation: rotate 4s linear infinite;
+        }
+        
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+        
+        .tier-card:hover::before {
+            opacity: 0.5;
+        }
+        
+        .tier-card::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            background: var(--dark-card);
+            border-radius: 18px;
+            z-index: 1;
+        }
+        
+        .tier-card > * {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .tier-card:hover {
+            transform: translateY(-15px) scale(1.05);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+        }
+        
+        .tier-bronze {
+            border-color: #CD7F32;
+            --card-color: #CD7F32;
+        }
+        
+        .tier-silver {
+            border-color: #C0C0C0;
+            --card-color: #C0C0C0;
+        }
+        
+        .tier-gold {
+            border-color: #FFD700;
+            --card-color: #FFD700;
+        }
+        
+        .tier-diamond {
+            border-color: var(--neon-cyan);
+            --card-color: var(--neon-cyan);
+        }
+        
+        .tier-card.active {
+            transform: scale(1.0);
+            box-shadow: 0 0 60px var(--card-color);
+        }
+        
+        .tier-card.active:hover {
+            transform: translateY(-15px) scale(1.05);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+        }
+        
+        .tier-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 25px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .tier-icon-inner {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 3px solid var(--card-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            position: relative;
+            box-shadow: 
+                0 0 30px var(--card-color),
+                inset 0 0 20px rgba(255, 255, 255, 0.1);
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+        
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0) rotateY(0deg); }
+            50% { transform: translateY(-10px) rotateY(180deg); }
+        }
+        
+        .tier-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            color: var(--card-color);
+            text-shadow: 0 0 20px var(--card-color);
+            text-align: center;
+        }
+        
+        .tier-price {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 56px;
+            font-weight: 900;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, white, var(--card-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+        }
+        
+        .tier-currency {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+        
+        .tier-desc {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+            text-align: center;
+        }
+        
+
+        /* ==================== RULES SECTION ==================== */
+        .rules-section {
+            padding: 100px 6%;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .rules-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(10, 10, 15, 0.9);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 30px;
+            padding: 60px;
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.2);
+        }
+        
+        .rules-title {
+            font-family: 'Orbitron', 'Exo 2', sans-serif;
+            font-size: 48px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .rules-subtitle {
+            text-align: center;
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 50px;
+            line-height: 1.6;
+        }
+        
+        .rules-step {
+            margin-bottom: 40px;
+            padding-left: 40px;
+            position: relative;
+        }
+        
+        .rules-step-title {
+            font-family: 'Orbitron', 'Exo 2', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            margin-bottom: 15px;
+        }
+        
+        .rules-step-content {
+            font-size: 16px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        
+        .rules-levels {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 1024px) {
+            .rules-levels {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .rules-levels {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .rules-level-item {
+            padding: 15px 20px;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 15px;
+            font-size: 16px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .rules-level-item .usdc-badge {
+            font-size: 12px;
+            color: rgba(0, 240, 255, 0.7);
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+        
+        .rules-level-name {
+            font-weight: 700;
+            color: var(--neon-yellow);
+        }
+        
+        .rules-bonuses {
+            margin-top: 20px;
+        }
+        
+        .rules-bonus-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            background: rgba(176, 38, 255, 0.05);
+            border-left: 3px solid var(--neon-purple);
+            margin-bottom: 10px;
+            border-radius: 10px;
+        }
+        
+        .rules-bonus-icon {
+            font-size: 24px;
+        }
+        
+        .rules-bonus-text {
+            flex: 1;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .rules-bonus-label {
+            font-weight: 700;
+            color: var(--neon-cyan);
+        }
+        
+        .rules-withdrawal {
+            background: rgba(255, 16, 240, 0.05);
+            border: 1px solid rgba(255, 16, 240, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .rules-withdrawal ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .rules-withdrawal li {
+            padding: 10px 0 10px 30px;
+            position: relative;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .rules-withdrawal li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--neon-cyan);
+            font-weight: 900;
+            font-size: 18px;
+        }
+        
+                .calculator-section {
+            padding: 100px 6%;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(40px, 7vw, 80px);
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.6);
+            max-width: 800px;
+            margin: 0 auto 60px;
+        }
+        
+        .calculator {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: linear-gradient(165deg, rgba(10, 10, 15, 0.95), rgba(20, 20, 30, 0.95));
+            border: 2px solid var(--neon-cyan);
+            border-radius: 30px;
+            padding: 50px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 60px rgba(0, 240, 255, 0.3);
+        }
+        
+        .calculator::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink), var(--neon-cyan));
+            background-size: 400% 400%;
+            border-radius: 30px;
+            z-index: -1;
+            opacity: 0.5;
+            animation: borderGlow 8s ease infinite;
+        }
+        
+        @keyframes borderGlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .calc-tier-selector {
+            margin-bottom: 40px;
+        }
+        
+        .calc-tier-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--neon-cyan);
+            margin-bottom: 20px;
+            text-align: center;
+            display: block;
+        }
+        
+        .calc-tiers {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .calc-tier-btn {
+            padding: 15px 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .calc-tier-btn:hover {
+            background: rgba(0, 240, 255, 0.1);
+            border-color: var(--neon-cyan);
+            color: white;
+        }
+        
+        .calc-tier-btn.active {
+            background: rgba(0, 240, 255, 0.2);
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+        }
+        
+        .calc-tier-price {
+            font-size: 16px;
+            display: block;
+            margin-top: 5px;
+        }
+        
+        .sliders-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+        
+        .slider-group {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .slider-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--neon-cyan);
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, rgba(0, 240, 255, 0.2), rgba(176, 38, 255, 0.2));
+            outline: none;
+            -webkit-appearance: none;
+            border-radius: 3px;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 20px var(--neon-cyan);
+            transition: all 0.3s;
+        }
+        
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+            box-shadow: 0 0 30px var(--neon-pink);
+        }
+        
+        .slider-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            font-weight: 900;
+            text-align: center;
+            margin-top: 20px;
+            color: white;
+            text-shadow: 0 0 20px var(--neon-cyan);
+        }
+        
+        .results {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-label {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .result-count {
+            font-size: 14px;
+            color: var(--neon-cyan);
+            font-weight: 600;
+        }
+        
+        .result-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 0 15px var(--neon-cyan);
+        }
+        
+        .total-box {
+            margin-top: 30px;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(176, 38, 255, 0.1));
+            border: 2px solid var(--neon-purple);
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(176, 38, 255, 0.3);
+        }
+        
+        .total-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--neon-cyan);
+            margin-bottom: 15px;
+        }
+        
+        .total-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 72px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--neon-cyan), white, var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 30px var(--neon-cyan));
+        }
+        
+        .roi-badge {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple));
+            border-radius: 50px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            box-shadow: 0 0 30px var(--neon-pink);
+        }
+        
+        .network-visual {
+            margin-top: 50px;
+            text-align: center;
+        }
+        
+        .network-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--neon-cyan);
+            margin-bottom: 30px;
+        }
+        
+        .network-tree {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .network-level {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .level-badge {
+            padding: 8px 20px;
+            background: rgba(0, 240, 255, 0.2);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+        
+        .level-count {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 42px;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 0 20px var(--neon-cyan);
+        }
+        
+        footer {
+            background: rgba(5, 5, 5, 0.9);
+            border-top: 1px solid rgba(0, 240, 255, 0.2);
+            padding: 60px 6% 40px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .footer-disclaimer {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .disclaimer-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--neon-yellow);
+            margin-bottom: 20px;
+        }
+        
+        .disclaimer-text {
+            font-size: 13px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 15px;
+        }
+        
+        .disclaimer-text strong {
+            color: white;
+            font-weight: 600;
+        }
+        
+        .footer-bottom {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        @media (max-width: 1024px) {
+            .tiers-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .sliders-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .calc-tiers {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 50px;
+            }
+            
+            .tiers-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .calculator {
+                padding: 30px 20px;
+            }
+            
+            .total-value {
+                font-size: 48px;
+            }
+            
+            .network-tree {
+                flex-direction: column;
+            }
+            
+            .calc-tiers {
+                grid-template-columns: 1fr;
+            }
+        
+        /* ==================== DASHBOARD STYLES ==================== */
+        
+        #dashboard {
+            position: relative;
+            z-index: 2;
+            padding: 80px 6% 60px;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Demo Mode Indicator */
+        .demo-mode-indicator {
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #FFD700;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .demo-exit-btn {
+            background: rgba(255, 215, 0, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.6);
+            color: #FFD700;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+        
+        .demo-exit-btn:hover {
+            background: rgba(255, 215, 0, 0.4);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        /* Dashboard Section */
+        .dashboard-section {
+            margin-bottom: 40px;
+            background: rgba(5, 5, 15, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* СЕКЦИЯ 1: Tier & Referral */
+        .section-tier-and-referral {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 30px;
+        }
+        
+        .tier-card {
+            background: rgba(255, 215, 0, 0.05);
+            border: 2px solid rgba(255, 215, 0, 0.4);
+            border-radius: 16px;
+            padding: 25px;
+            transition: all 0.3s;
+        }
+        
+        .tier-card:hover {
+            border-color: rgba(255, 215, 0, 0.8);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            transform: translateY(-5px);
+        }
+        
+        .tier-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+        
+        .tier-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .tier-info {
+            margin-bottom: 15px;
+        }
+        
+        .tier-deposit,
+        .tier-date {
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .tier-deposit .label,
+        .tier-date .label {
+            color: #999;
+            font-weight: 600;
+        }
+        
+        .tier-deposit span:last-child,
+        .tier-date span:last-child {
+            color: var(--neon-cyan);
+            font-weight: 600;
+        }
+        
+        .tier-status {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid var(--neon-green);
+            border-radius: 20px;
+            color: var(--neon-green);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        /* Referral Card */
+        .referral-card {
+            background: rgba(0, 240, 255, 0.05);
+            border: 2px solid rgba(0, 240, 255, 0.4);
+            border-radius: 16px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .referral-card:hover {
+            border-color: rgba(0, 240, 255, 0.8);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+        }
+        
+        .referral-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .referral-link {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: var(--neon-cyan);
+            word-break: break-all;
+            transition: all 0.3s;
+        }
+        
+        .referral-link:hover {
+            background: rgba(0, 240, 255, 0.15);
+            border-color: rgba(0, 240, 255, 0.6);
+        }
+        
+        .copy-button {
+            padding: 12px 20px;
+            background: rgba(0, 240, 255, 0.2);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 8px;
+            color: var(--neon-cyan);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-size: 12px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .copy-button:hover {
+            background: rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+        
+        .copy-button.copied {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+        }
+        
+        .copy-feedback {
+            margin-top: 10px;
+            color: var(--neon-green);
+            font-size: 12px;
+            font-weight: 600;
+            animation: fadeIn 0.3s;
+        }
+        
+        /* СЕКЦИЯ 2: Referral Table */
+        .section-referral-table {
+            padding: 0;
+        }
+        
+        .table-wrapper {
+            padding: 30px;
+            overflow-x: auto;
+        }
+        
+        .referral-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        
+        .referral-table thead {
+            background: rgba(0, 240, 255, 0.1);
+        }
+        
+        .referral-table th {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 2px solid rgba(0, 240, 255, 0.4);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            letter-spacing: 1px;
+        }
+        
+        .referral-table tbody tr {
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .referral-table tbody tr:hover {
+            background: rgba(0, 240, 255, 0.05);
+        }
+        
+        .referral-table td {
+            padding: 16px;
+        }
+        
+        .tier-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
+        
+        .tier-icon-small {
+            font-size: 28px;
+        }
+        
+        .tier-name-small {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        
+        .tier-amount-small {
+            font-size: 11px;
+            color: #999;
+            margin-top: 3px;
+        }
+        
+        .level-cell {
+            background: rgba(0, 240, 255, 0.03);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 8px;
+            padding: 16px !important;
+            min-width: 140px;
+            transition: all 0.3s;
+        }
+        
+        .level-cell:hover {
+            background: rgba(0, 240, 255, 0.08);
+            border-color: rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+        
+        .referrals-count {
+            font-weight: 700;
+            color: var(--neon-cyan);
+            font-size: 15px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .earnings-line {
+            font-size: 12px;
+            color: var(--neon-green);
+            margin-top: 8px;
+            font-weight: 600;
+        }
+        
+        .percent-line {
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+        
+        /* СЕКЦИЯ 3: Financial */
+        .section-financial {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .financial-item {
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .financial-item:hover {
+            border-color: rgba(0, 240, 255, 0.6);
+            background: rgba(0, 240, 255, 0.08);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+        }
+        
+        .financial-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        
+        .financial-label span:first-child {
+            font-size: 18px;
+        }
+        
+        .financial-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 8px;
+        }
+        
+        .financial-status {
+            font-size: 12px;
+            color: var(--neon-green);
+            font-weight: 600;
+        }
+        
+        .financial-status.warning {
+            color: #FFB800;
+        }
+        
+        .financial-status.danger {
+            color: #FF0055;
+        }
+        
+        /* WITHDRAW BUTTON */
+        .section-withdrawal {
+            text-align: center;
+            padding: 40px 30px !important;
+        }
+        
+        .withdraw-button {
+            padding: 16px 50px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 2px solid var(--neon-green);
+            border-radius: 12px;
+            color: var(--neon-green);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            letter-spacing: 2px;
+        }
+        
+        .withdraw-button:hover:not(:disabled) {
+            background: rgba(0, 255, 136, 0.3);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
+            transform: translateY(-3px);
+        }
+        
+        .withdraw-button:disabled {
+            background: rgba(100, 100, 100, 0.1);
+            border-color: #666;
+            color: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        /* MODAL STYLES */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: var(--dark-card);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.3);
+            animation: slideUp 0.3s;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-close:hover {
+            color: var(--neon-cyan);
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            margin-bottom: 30px;
+        }
+        
+        .modal-info {
+            background: rgba(0, 240, 255, 0.05);
+            border-left: 3px solid var(--neon-cyan);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--neon-cyan);
+        }
+        
+        .modal-info strong {
+            font-weight: 700;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #999;
+            font-weight: 600;
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-prefix,
+        .input-suffix {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            padding: 12px;
+            font-weight: 600;
+            color: var(--neon-cyan);
+        }
+        
+        .input-prefix {
+            border-radius: 8px 0 0 8px;
+            border-right: none;
+        }
+        
+        .input-suffix {
+            border-radius: 0 8px 8px 0;
+            border-left: none;
+        }
+        
+        .form-input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: var(--neon-cyan);
+            font-size: 16px;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            background: rgba(0, 240, 255, 0.15);
+        }
+        
+        .form-input::placeholder {
+            color: #666;
+        }
+        
+        .form-error {
+            color: #FF0055;
+            font-size: 12px;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+        
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #999;
+            transition: all 0.3s;
+        }
+        
+        .form-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--neon-green);
+        }
+        
+        .form-checkbox:hover {
+            color: white;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .modal-button {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal-button.cancel {
+            background: rgba(100, 100, 100, 0.1);
+            color: #999;
+        }
+        
+        .modal-button.cancel:hover {
+            background: rgba(100, 100, 100, 0.2);
+            color: white;
+            border-color: #999;
+        }
+        
+        .modal-button.confirm {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+        }
+        
+        .modal-button.confirm:hover:not(:disabled) {
+            background: rgba(0, 255, 136, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .modal-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .section-tier-and-referral {
+                grid-template-columns: 1fr;
+            }
+            
+            .table-wrapper {
+                overflow-x: auto;
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            #dashboard {
+                padding: 80px 4% 40px;
+            }
+            
+            .dashboard-section {
+                padding: 20px;
+                margin-bottom: 25px;
+            }
+            
+            .section-financial {
+                grid-template-columns: 1fr;
+            }
+            
+            .referral-table {
+                font-size: 12px;
+            }
+            
+            .referral-table th,
+            .referral-table td {
+                padding: 12px 8px;
+            }
+            
+            .financial-value {
+                font-size: 22px;
+            }
+            
+            .modal-content {
+                padding: 30px;
+                max-width: 90%;
+            }
+            
+            .demo-mode-indicator {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+
+        }
+    </style>
+</head>
+<body>
+    <!-- 3D Wave Background -->
+    <div id="wave3d"></div>
+    
+    <div class="particles" id="particles"></div>
+    
+    <header>
+        <div class="logo">SOLDIA</div>
+        
+        <button class="connect-wallet" onclick="openWalletModal()">
+            <span data-translate="connectWallet">Connect Wallet</span>
+        </button>
+        
+        <div class="language-selector">
+            <button class="language-btn" onclick="toggleLanguage()">
+                <span id="current-lang">EN</span> ▾
+            </button>
+            <div class="language-dropdown" id="lang-dropdown">
+                    <div class="language-option" onclick="setLanguage('en')">🇬🇧 English</div>
+                    <div class="language-option" onclick="setLanguage('ru')">🇷🇺 Русский</div>
+                    <div class="language-option" onclick="setLanguage('es')">🇪🇸 Español</div>
+                    <div class="language-option" onclick="setLanguage('ar')">🇸🇦 العربية</div>
+                    <div class="language-option" onclick="setLanguage('hi')">🇮🇳 हिन्दी</div>
+                    <div class="language-option" onclick="setLanguage('zh')">🇨🇳 中文</div>
+                    <div class="language-option" onclick="setLanguage('fr')">🇫🇷 Français</div>
+                    <div class="language-option" onclick="setLanguage('de')">🇩🇪 Deutsch</div>
+                    <div class="language-option" onclick="setLanguage('pt')">🇵🇹 Português</div>
+                    <div class="language-option" onclick="setLanguage('id')">🇮🇩 Indonesia</div>
+                    <div class="language-option" onclick="setLanguage('tr')">🇹🇷 Türkçe</div>
+                    <div class="language-option" onclick="setLanguage('ko')">🇰🇷 한국어</div>
+                    <div class="language-option" onclick="setLanguage('it')">🇮🇹 Italiano</div>
+                    <div class="language-option" onclick="setLanguage('uk')">🇺🇦 Українська</div>
+                    <div class="language-option" onclick="setLanguage('fa')">🇮🇷 فارسی</div>
+                    <div class="language-option" onclick="setLanguage('ja')">🇯🇵 日本語</div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge" data-translate="badge">⚡ Exponential Growth Platform</div>
+            <h1 class="hero-title">
+                <span data-translate="heroLine1">BUILD YOUR</span>
+                <span class="gradient-text" data-translate="heroLine2">DIAMOND EMPIRE</span>
+            </h1>
+            <p class="hero-subtitle" data-translate="heroSubtitle">
+                Harness the power of geometric progression. Your network grows exponentially - 
+                each member multiplies your earning potential through three commission tiers.
+            </p>
+            
+            <div class="tiers-grid">
+                <div class="tier-card tier-bronze" onclick="selectTier(this, 49, 'bronze')">
+                    <div class="tier-icon">
+                        <div class="tier-icon-inner">💫</div>
+                    </div>
+                    <div class="tier-name" data-translate="bronze">🟡 Topaz</div>
+                    <div class="tier-price">$49</div>
+                    <div class="tier-currency">USDC</div>
+                    <div class="tier-desc" data-translate="bronzeDesc">Entry-level investment with full network benefits</div>
+                </div>
+                
+                <div class="tier-card tier-silver active" onclick="selectTier(this, 149, 'silver')">
+                    <div class="tier-icon">
+                        <div class="tier-icon-inner">⚡</div>
+                    </div>
+                    <div class="tier-name" data-translate="silver">🔵 Opal</div>
+                    <div class="tier-price">$149</div>
+                    <div class="tier-currency">USDC</div>
+                    <div class="tier-desc" data-translate="silverDesc">Optimal tier for balanced returns</div>
+                </div>
+                
+                <div class="tier-card tier-gold" onclick="selectTier(this, 499, 'gold')">
+                    <div class="tier-icon">
+                        <div class="tier-icon-inner">🌟</div>
+                    </div>
+                    <div class="tier-name" data-translate="gold">🔷 Sapphire</div>
+                    <div class="tier-price">$499</div>
+                    <div class="tier-currency">USDC</div>
+                    <div class="tier-desc" data-translate="goldDesc">Advanced investment for serious networkers</div>
+                </div>
+                
+                <div class="tier-card tier-diamond" onclick="selectTier(this, 999, 'diamond')">
+                    <div class="tier-icon">
+                        <div class="tier-icon-inner">💎</div>
+                    </div>
+                    <div class="tier-name" data-translate="diamond">💎 Diamond</div>
+                    <div class="tier-price">$999</div>
+                    <div class="tier-currency">USDC</div>
+                    <div class="tier-desc" data-translate="diamondDesc">Elite tier for maximum exponential growth</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ==================== DASHBOARD SECTION ==================== -->
+    <section id="dashboard" class="dashboard" style="display: none;">
+        <div class="dashboard-container">
+            <!-- DEMO MODE INDICATOR -->
+            <div id="demoModeIndicator" class="demo-mode-indicator" style="display: none;">
+                <span>🎮 DEMO MODE - Test Data</span>
+                <button onclick="exitDemoMode()" class="demo-exit-btn">Exit Demo</button>
+            </div>
+            
+            <!-- СЕКЦИЯ 1: УРОВЕНЬ УЧАСТНИКА & РЕФЕРАЛЬНАЯ ССЫЛКА -->
+            <div class="dashboard-section section-tier-and-referral">
+                <div class="tier-card">
+                    <div class="tier-icon" id="tierIcon">🟡</div>
+                    <div class="tier-name" id="tierName">TOPAZ</div>
+                    <div class="tier-info">
+                        <div class="tier-deposit">
+                            <span class="label" data-translate="deposit">Deposit</span>: 
+                            <span id="tierAmount">$49.00</span>
+                        </div>
+                        <div class="tier-date">
+                            <span class="label" data-translate="date">Date</span>: 
+                            <span id="tierDate">-</span>
+                        </div>
+                    </div>
+                    <div class="tier-status" id="tierStatus">
+                        <span data-translate="status_active">Active</span>
+                    </div>
+                </div>
+                
+                <div class="referral-card">
+                    <div class="referral-label" data-translate="referral_link">Referral Link</div>
+                    <div class="referral-link" id="referralLink">https://soldia.com/?ref=...</div>
+                    <button class="copy-button" onclick="copyReferralLink()" data-translate="copy_button">
+                        📋 Copy
+                    </button>
+                    <div id="copyFeedback" class="copy-feedback" style="display: none;">
+                        <span data-translate="copied">✅ Copied!</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- СЕКЦИЯ 2: ТАБЛИЦА РЕФЕРАЛОВ ПО УРОВНЯМ И ИГРОВЫМ УРОВНЯМ -->
+            <div class="dashboard-section section-referral-table">
+                <div class="table-wrapper">
+                    <table class="referral-table">
+                        <thead>
+                            <tr>
+                                <th data-translate="level">Level</th>
+                                <th><span data-translate="level_1">Level 1</span> (30%)</th>
+                                <th><span data-translate="level_2">Level 2</span> (20%)</th>
+                                <th><span data-translate="level_3">Level 3</span> (10%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="referralTableBody">
+                            <!-- Будет заполнено JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- СЕКЦИЯ 3: ФИНАНСОВАЯ ИНФОРМАЦИЯ -->
+            <div class="dashboard-section section-financial">
+                <div class="financial-item">
+                    <div class="financial-label">
+                        <span>💵</span>
+                        <span data-translate="deposit_field">Deposit</span>
+                    </div>
+                    <div class="financial-value" id="financialDeposit">$0.00</div>
+                </div>
+                
+                <div class="financial-item">
+                    <div class="financial-label">
+                        <span>📈</span>
+                        <span data-translate="total_earned">Total Earned</span>
+                    </div>
+                    <div class="financial-value" id="financialEarned">$0.00</div>
+                </div>
+                
+                <div class="financial-item">
+                    <div class="financial-label">
+                        <span>💸</span>
+                        <span data-translate="total_withdrawn">Total Withdrawn</span>
+                    </div>
+                    <div class="financial-value" id="financialWithdrawn">$0.00</div>
+                </div>
+                
+                <div class="financial-item">
+                    <div class="financial-label">
+                        <span>💰</span>
+                        <span data-translate="available_balance">Available Balance</span>
+                    </div>
+                    <div class="financial-value" id="financialAvailable">$0.00</div>
+                    <div class="financial-status" id="financialStatus">
+                        <span data-translate="cannot_withdraw">Withdrawal unavailable</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- КНОПКА ВЫВОДА СРЕДСТВ -->
+            <div class="dashboard-section section-withdrawal">
+                <button id="withdrawBtn" class="withdraw-button" onclick="openWithdrawModal()">
+                    💸 <span data-translate="withdraw_button">WITHDRAW FUNDS</span>
+                </button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- ==================== MODAL ВЫВОДА СРЕДСТВ ==================== -->
+    <div id="withdrawModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" data-translate="withdraw_title">Withdraw Funds</h3>
+                <button class="modal-close" onclick="closeWithdrawModal()">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="modal-info">
+                    <span data-translate="available">Available</span>: 
+                    <strong id="modalAvailableAmount">$0.00</strong> USDC
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" data-translate="enter_amount">Enter amount (minimum $10):</label>
+                    <div class="input-group">
+                        <span class="input-prefix">$</span>
+                        <input 
+                            type="number" 
+                            id="withdrawAmount" 
+                            class="form-input" 
+                            placeholder="0.00" 
+                            min="10" 
+                            max="10000" 
+                            step="0.01"
+                            oninput="validateWithdrawAmount()"
+                        >
+                        <span class="input-suffix">USDC</span>
+                    </div>
+                    <div id="withdrawError" class="form-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-checkbox">
+                        <input type="checkbox" id="confirmCheckbox">
+                        <span data-translate="confirm_withdrawal">I confirm the withdrawal</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="modal-button cancel" onclick="closeWithdrawModal()" data-translate="cancel">Cancel</button>
+                <button class="modal-button confirm" id="confirmWithdrawBtn" onclick="submitWithdrawal()" disabled data-translate="withdraw_button">Withdraw</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- ==================== RULES SECTION ==================== -->
+    <section class="rules-section">
+        <div class="rules-container">
+            <h2 class="rules-title" data-translate="rulesTitle">🎮 HOW SOLDIA WORKS?</h2>
+            <p class="rules-subtitle" data-translate="rulesSubtitle">
+                SOLDIA is a referral game on Solana blockchain, where your income depends on team activity.
+            </p>
+            
+            <div class="rules-step">
+                <h3 class="rules-step-title" data-translate="rulesStep1Title">Step 1: Choose Level</h3>
+                <div class="rules-step-content" data-translate="rulesStep1Content">
+                    Purchase one of 4 participation levels:
+                </div>
+                <div class="rules-levels">
+                    <div class="rules-level-item">
+                        <div>🟡</div>
+                        <div><span class="rules-level-name" data-translate="bronze">Topaz</span></div>
+                        <div>$49</div>
+                        <div class="usdc-badge">USDC</div>
+                    </div>
+                    <div class="rules-level-item">
+                        <div>🔵</div>
+                        <div><span class="rules-level-name" data-translate="silver">Opal</span></div>
+                        <div>$149</div>
+                        <div class="usdc-badge">USDC</div>
+                    </div>
+                    <div class="rules-level-item">
+                        <div>🔷</div>
+                        <div><span class="rules-level-name" data-translate="gold">Sapphire</span></div>
+                        <div>$499</div>
+                        <div class="usdc-badge">USDC</div>
+                    </div>
+                    <div class="rules-level-item">
+                        <div>💎</div>
+                        <div><span class="rules-level-name" data-translate="diamond">Diamond</span></div>
+                        <div>$999</div>
+                        <div class="usdc-badge">USDC</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="rules-step">
+                <h3 class="rules-step-title" data-translate="rulesStep2Title">Step 2: Get Referral Link</h3>
+                <div class="rules-step-content" data-translate="rulesStep2Content">
+                    After activation, you receive a unique referral link.
+                </div>
+            </div>
+            
+            <div class="rules-step">
+                <h3 class="rules-step-title" data-translate="rulesStep3Title">Step 3: Invite and Earn</h3>
+                <div class="rules-step-content" data-translate="rulesStep3Content">
+                    Receive bonuses through 3-level system:
+                </div>
+                <div class="rules-bonuses">
+                    <div class="rules-bonus-item">
+                        <div class="rules-bonus-icon">🥇</div>
+                        <div class="rules-bonus-text">
+                            <span class="rules-bonus-label" data-translate="rulesLevel1Label">1st Level</span>
+                            <span data-translate="rulesLevel1Text">(direct invites) — </span><strong>30%</strong>
+                            <span data-translate="rulesLevel1Suffix"> of purchase</span>
+                        </div>
+                    </div>
+                    <div class="rules-bonus-item">
+                        <div class="rules-bonus-icon">🥈</div>
+                        <div class="rules-bonus-text">
+                            <span class="rules-bonus-label" data-translate="rulesLevel2Label">2nd Level</span>
+                            <span data-translate="rulesLevel2Text">(referral invites) — </span><strong>20%</strong>
+                            <span data-translate="rulesLevel2Suffix"> of purchase</span>
+                        </div>
+                    </div>
+                    <div class="rules-bonus-item">
+                        <div class="rules-bonus-icon">🥉</div>
+                        <div class="rules-bonus-text">
+                            <span class="rules-bonus-label" data-translate="rulesLevel3Label">3rd Level</span>
+                            <span data-translate="rulesLevel3Text">(level 2 invites) — </span><strong>10%</strong>
+                            <span data-translate="rulesLevel3Suffix"> of purchase</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="rules-step">
+                <h3 class="rules-step-title" data-translate="rulesStep4Title">Step 4: Withdraw</h3>
+                <div class="rules-withdrawal">
+                    <ul>
+                        <li><span data-translate="rulesWithdrawal1">Available after <strong>x2</strong> of deposit</span></li>
+                        <li><span data-translate="rulesWithdrawal2">Min: <strong>$10 USDC</strong></span></li>
+                        <li><span data-translate="rulesWithdrawal3">Paid in <strong>USDC</strong></span></li>
+                        <li><span data-translate="rulesWithdrawal4">Processing: minutes to 24h</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="calculator-section">
+        <h2 class="section-title" data-translate="calcTitle">GROWTH CALCULATOR</h2>
+        <p class="section-subtitle" data-translate="calcSubtitle">
+            Calculate your exponential earnings using geometric progression. 
+            Adjust the sliders to see how your network multiplies.
+        </p>
+        
+        <div class="calculator">
+            <div class="calc-tier-selector">
+                <label class="calc-tier-label" data-translate="selectTier">Select Your Tier</label>
+                <div class="calc-tiers">
+                    <button class="calc-tier-btn" onclick="selectCalcTier(this, 49)">
+                        🟡 <span data-translate="bronze">Topaz</span>
+                        <span class="calc-tier-price">$49</span>
+                    </button>
+                    <button class="calc-tier-btn active" onclick="selectCalcTier(this, 149)">
+                        🔵 <span data-translate="silver">Opal</span>
+                        <span class="calc-tier-price">$149</span>
+                    </button>
+                    <button class="calc-tier-btn" onclick="selectCalcTier(this, 499)">
+                        🔷 <span data-translate="gold">Sapphire</span>
+                        <span class="calc-tier-price">$499</span>
+                    </button>
+                    <button class="calc-tier-btn" onclick="selectCalcTier(this, 999)">
+                        💎 <span data-translate="diamond">Diamond</span>
+                        <span class="calc-tier-price">$999</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="sliders-container">
+                <div class="slider-group">
+                    <label class="slider-label" data-translate="youInvite">You Invite</label>
+                    <input type="range" min="1" max="50" value="10" class="slider" 
+                           oninput="calculate()">
+                    <div class="slider-value" id="you-invite">10</div>
+                </div>
+                
+                <div class="slider-group">
+                    <label class="slider-label" data-translate="eachInvites">Each Invites</label>
+                    <input type="range" min="1" max="50" value="10" class="slider" 
+                           oninput="calculate()">
+                    <div class="slider-value" id="each-invites">3</div>
+                </div>
+            </div>
+            
+            <div class="results">
+                <div class="result-item">
+                    <div class="result-label">
+                        <span data-translate="level1">Level 1 (Direct)</span>
+                        <span class="result-count" id="l1-count">10 friends</span>
+                    </div>
+                    <div class="result-value" id="l1-earn">$447</div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">
+                        <span data-translate="level2">Level 2 (×Growth)</span>
+                        <span class="result-count" id="l2-count">100 friends</span>
+                    </div>
+                    <div class="result-value" id="l2-earn">$894</div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">
+                        <span data-translate="level3">Level 3 (×Growth²)</span>
+                        <span class="result-count" id="l3-count">1000 friends</span>
+                    </div>
+                    <div class="result-value" id="l3-earn">$1,341</div>
+                </div>
+            </div>
+            
+            <div class="total-box">
+                <div class="total-label" data-translate="totalEarnings">Total Network Earnings</div>
+                <div class="total-value" id="total-earn">$2,682</div>
+                <div class="roi-badge">ROI: <span id="roi">1,800</span>%</div>
+            </div>
+            
+            <div class="network-visual">
+                <div class="network-title" data-translate="networkGrowth">Your Network Growth</div>
+                <div class="network-tree">
+                    <div class="network-level">
+                        <div class="level-badge" data-translate="you">YOU</div>
+                        <div class="level-count">1</div>
+                    </div>
+                    <div class="network-level">
+                        <div class="level-badge" data-translate="level1Short">LEVEL 1</div>
+                        <div class="level-count" id="visual-l1">10</div>
+                    </div>
+                    <div class="network-level">
+                        <div class="level-badge" data-translate="level2Short">LEVEL 2</div>
+                        <div class="level-count" id="visual-l2">30</div>
+                    </div>
+                    <div class="network-level">
+                        <div class="level-badge" data-translate="level3Short">LEVEL 3</div>
+                        <div class="level-count" id="visual-l3">90</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="footer-disclaimer">
+            <div class="disclaimer-title">⚠️ <span data-translate="disclaimerTitle">Important Legal Disclaimer</span></div>
+            
+            <p class="disclaimer-text" data-translate="disclaimer1">
+                <strong>This is not financial advice.</strong> SOLDIA is a referral network platform and not an investment product, 
+                financial service, or investment scheme. No profits or returns are guaranteed.
+            </p>
+            
+            <p class="disclaimer-text" data-translate="disclaimer2">
+                <strong>Voluntary participation.</strong> All participants engage voluntarily and at their own risk. 
+                Any earnings depend entirely on network growth and individual performance.
+            </p>
+            
+            <p class="disclaimer-text" data-translate="disclaimer3">
+                <strong>No guarantees.</strong> Past performance, projections, or calculations shown on this platform 
+                do not guarantee future results. Actual earnings may vary significantly or may be zero.
+            </p>
+            
+            <p class="disclaimer-text" data-translate="disclaimer4">
+                <strong>Personal responsibility.</strong> By participating, you acknowledge that you have read and 
+                understood these terms and accept full responsibility for your decisions and actions.
+            </p>
+            
+            <div class="footer-bottom">
+                © 2026 SOLDIA. <span data-translate="footerRights">All rights reserved.</span> | 
+                <span data-translate="footerBlockchain">Powered by Solana Blockchain</span>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+        
+        // Translations - будет добавлено в следующей части
+        const translations = {
+            en: {
+                connectWallet: 'Connect Wallet',
+                selectWallet: 'Select Wallet',
+                cancelButton: 'Cancel',
+                badge: '⚡ Exponential Growth Platform',
+                heroLine1: 'BUILD YOUR',
+                heroLine2: 'DIAMOND EMPIRE',
+                heroSubtitle: 'Harness the power of geometric progression. Your network grows exponentially - each member multiplies your earning potential through three commission tiers.',
+                bronze: 'Topaz',
+                silver: 'Opal',
+                gold: 'Sapphire',
+                diamond: 'Diamond',
+                bronzeDesc: 'Entry-level investment with full network benefits',
+                silverDesc: 'Optimal tier for balanced returns',
+                goldDesc: 'Advanced investment for serious networkers',
+                diamondDesc: 'Elite tier for maximum exponential growth',
+                calcTitle: 'GROWTH CALCULATOR',
+                calcSubtitle: 'Calculate your exponential earnings using geometric progression. Adjust the sliders to see how your network multiplies.',
+                selectTier: 'Select Your Tier',
+                youInvite: 'You Invite',
+                eachInvites: 'Each Invites',
+                level1: 'Level 1 (Direct)',
+                level2: 'Level 2 (×Growth)',
+                level3: 'Level 3 (×Growth²)',
+                totalEarnings: 'Total Network Earnings',
+                networkGrowth: 'Your Network Growth',
+                you: 'YOU',
+                level1Short: 'LEVEL 1',
+                level2Short: 'LEVEL 2',
+                level3Short: 'LEVEL 3',
+                disclaimerTitle: 'Important Legal Disclaimer',
+                disclaimer1: 'This is not financial advice. SOLDIA is a referral network platform and not an investment product, financial service, or investment scheme. No profits or returns are guaranteed.',
+                disclaimer2: 'Voluntary participation. All participants engage voluntarily and at their own risk. Any earnings depend entirely on network growth and individual performance.',
+                disclaimer3: 'No guarantees. Past performance, projections, or calculations shown on this platform do not guarantee future results. Actual earnings may vary significantly or may be zero.',
+                disclaimer4: 'Personal responsibility. By participating, you acknowledge that you have read and understood these terms and accept full responsibility for your decisions and actions.',
+                footerRights: 'All rights reserved.',
+                
+                rulesTitle: '🎮 HOW SOLDIA WORKS?',
+                rulesSubtitle: 'SOLDIA is a referral game on Solana blockchain, where your income depends on team activity.',
+                rulesStep1Title: 'Step 1: Choose Level',
+                rulesStep1Content: 'Purchase one of 4 participation levels:',
+                rulesStep2Title: 'Step 2: Get Referral Link',
+                rulesStep2Content: 'After activation, you receive a unique referral link.',
+                rulesStep3Title: 'Step 3: Invite and Earn',
+                rulesStep3Content: 'Receive bonuses through 3-level system:',
+                rulesLevel1Label: '1st Level',
+                rulesLevel1Text: '(direct invites) — ',
+                rulesLevel1Suffix: ' of purchase',
+                rulesLevel2Label: '2nd Level',
+                rulesLevel2Text: '(referral invites) — ',
+                rulesLevel2Suffix: ' of purchase',
+                rulesLevel3Label: '3rd Level',
+                rulesLevel3Text: '(level 2 invites) — ',
+                rulesLevel3Suffix: ' of purchase',
+                rulesStep4Title: 'Step 4: Withdraw',
+                rulesWithdrawal1: 'Available after <strong>x2</strong> of deposit',
+                rulesWithdrawal2: 'Min: <strong>$10 USDC</strong>',
+                rulesWithdrawal3: 'Paid in <strong>USDC</strong>',
+                rulesWithdrawal4: 'Processing: minutes to 24h',
+                footerBlockchain: 'Powered by Solana Blockchain'
+            },
+            ru: {
+                connectWallet: 'Подключить кошелек',
+                selectWallet: 'Выберите кошелек',
+                cancelButton: 'Отмена',
+                badge: '⚡ Платформа экспоненциального роста',
+                heroLine1: 'СОЗДАЙТЕ СВОЮ',
+                heroLine2: 'БРИЛЛИАНТОВУЮ ИМПЕРИЮ',
+                heroSubtitle: 'Используйте силу геометрической прогрессии. Ваша сеть растет экспоненциально - каждый участник умножает ваш потенциал заработка через три уровня комиссий.',
+                bronze: 'Топаз',
+                silver: 'Опал',
+                gold: 'Сапфир',
+                diamond: 'Алмаз',
+                bronzeDesc: 'Начальный уровень с полными преимуществами сети',
+                silverDesc: 'Оптимальный уровень для сбалансированной прибыли',
+                goldDesc: 'Продвинутый уровень для серьёзных участников',
+                diamondDesc: 'Элитный уровень для максимального роста',
+                calcTitle: 'КАЛЬКУЛЯТОР РОСТА',
+                calcSubtitle: 'Рассчитайте ваш экспоненциальный заработок используя геометрическую прогрессию. Настройте ползунки чтобы увидеть как растет сеть.',
+                selectTier: 'Выберите уровень',
+                youInvite: 'Вы приглашаете',
+                eachInvites: 'Каждый приглашает',
+                level1: 'Уровень 1 (Прямые)',
+                level2: 'Уровень 2 (×Рост)',
+                level3: 'Уровень 3 (×Рост²)',
+                totalEarnings: 'Общий заработок сети',
+                networkGrowth: 'Рост вашей сети',
+                you: 'ВЫ',
+                level1Short: 'УРОВЕНЬ 1',
+                level2Short: 'УРОВЕНЬ 2',
+                level3Short: 'УРОВЕНЬ 3',
+                disclaimerTitle: 'Важный юридический дисклеймер',
+                disclaimer1: 'Это не финансовый совет. SOLDIA - это платформа реферальной сети, а не инвестиционный продукт, финансовая услуга или инвестиционная схема. Прибыль не гарантируется.',
+                disclaimer2: 'Добровольное участие. Все участники участвуют добровольно и на свой риск. Любые заработки зависят исключительно от роста сети и индивидуальной эффективности.',
+                disclaimer3: 'Никаких гарантий. Прошлые результаты, прогнозы или расчеты не гарантируют будущих результатов. Фактический заработок может значительно отличаться или быть нулевым.',
+                disclaimer4: 'Личная ответственность. Участвуя, вы признаете, что прочитали и поняли эти условия и принимаете полную ответственность за свои решения и действия.',
+                footerRights: 'Все права защищены.',
+                
+                rulesTitle: '🎮 КАК РАБОТАЕТ SOLDIA?',
+                rulesSubtitle: 'SOLDIA — это реферальная игра на блокчейне Solana, где ваш доход зависит от активности команды.',
+                rulesStep1Title: 'Шаг 1: Выберите уровень',
+                rulesStep1Content: 'Приобретите один из 4 уровней участия:',
+                rulesStep2Title: 'Шаг 2: Получите реферальную ссылку',
+                rulesStep2Content: 'После активации вы получите уникальную реферальную ссылку.',
+                rulesStep3Title: 'Шаг 3: Приглашайте и зарабатывайте',
+                rulesStep3Content: 'Получайте бонусы через 3-уровневую систему:',
+                rulesLevel1Label: '1-й уровень',
+                rulesLevel1Text: '(ваши прямые приглашения) — ',
+                rulesLevel1Suffix: ' от суммы покупки',
+                rulesLevel2Label: '2-й уровень',
+                rulesLevel2Text: '(приглашения ваших рефералов) — ',
+                rulesLevel2Suffix: ' от суммы покупки',
+                rulesLevel3Label: '3-й уровень',
+                rulesLevel3Text: '(приглашения рефералов 2-го уровня) — ',
+                rulesLevel3Suffix: ' от суммы покупки',
+                rulesStep4Title: 'Шаг 4: Выводите средства',
+                rulesWithdrawal1: 'Вывод доступен после накопления <strong>x2</strong> от вашего депозита',
+                rulesWithdrawal2: 'Минимальная сумма вывода: <strong>$10 USDC</strong>',
+                rulesWithdrawal3: 'Выплаты производятся в <strong>USDC</strong> на ваш Solana кошелек',
+                rulesWithdrawal4: 'Обработка занимает от нескольких минут до 24 часов',
+                footerBlockchain: 'Работает на блокчейне Solana'
+            },
+            es: {
+    connectWallet: 'Conectar Billetera',
+    selectWallet: 'Seleccionar Billetera',
+    cancelButton: 'Cancelar',
+    badge: '⚡ Plataforma de Crecimiento Exponencial',
+    heroLine1: 'CONSTRUYE TU',
+    heroLine2: 'IMPERIO DIAMANTE',
+    heroSubtitle: 'Aprovecha el poder de la progresión geométrica. Tu red crece exponencialmente - cada miembro multiplica tu potencial de ganancias a través de tres niveles de comisión.',
+    bronze: 'Topacio',
+    silver: 'Ópalo',
+    gold: 'Zafiro',
+    diamond: 'Diamante',
+    bronzeDesc: 'Inversión de nivel inicial con beneficios completos de red',
+    silverDesc: 'Nivel óptimo para retornos equilibrados',
+    goldDesc: 'Inversión avanzada para networkers serios',
+    diamondDesc: 'Nivel élite para máximo crecimiento exponencial',
+    calcTitle: 'CALCULADORA DE CRECIMIENTO',
+    calcSubtitle: 'Calcula tus ganancias exponenciales usando progresión geométrica. Ajusta los controles para ver cómo se multiplica tu red.',
+    selectTier: 'Selecciona Tu Nivel',
+    youInvite: 'Tú Invitas',
+    eachInvites: 'Cada Uno Invita',
+    level1: 'Nivel 1 (Directo)',
+    level2: 'Nivel 2 (×Crecimiento)',
+    level3: 'Nivel 3 (×Crecimiento²)',
+    totalEarnings: 'Ganancias Totales de Red',
+    networkGrowth: 'Crecimiento de Tu Red',
+    you: 'TÚ',
+    level1Short: 'NIVEL 1',
+    level2Short: 'NIVEL 2',
+    level3Short: 'NIVEL 3',
+    disclaimerTitle: 'Aviso Legal Importante',
+    disclaimer1: 'Esto no es asesoramiento financiero. SOLDIA es una plataforma de red de referidos y no un producto de inversión, servicio financiero o esquema de inversión. No se garantizan ganancias.',
+    disclaimer2: 'Participación voluntaria. Todos los participantes se involucran voluntariamente y bajo su propio riesgo. Las ganancias dependen completamente del crecimiento de la red y el rendimiento individual.',
+    disclaimer3: 'Sin garantías. El rendimiento pasado, proyecciones o cálculos mostrados no garantizan resultados futuros. Las ganancias reales pueden variar significativamente o ser cero.',
+    disclaimer4: 'Responsabilidad personal. Al participar, reconoces que has leído y comprendido estos términos y aceptas la responsabilidad total por tus decisiones y acciones.',
+    footerRights: 'Todos los derechos reservados.',
+    footerBlockchain: 'Impulsado por Blockchain Solana',
+                rulesTitle: '🎮 ¿CÓMO FUNCIONA SOLDIA?',
+                rulesSubtitle: 'SOLDIA es un juego de referidos en la blockchain de Solana, donde tus ingresos dependen de la actividad de tu equipo.',
+                rulesStep1Title: 'Paso 1: Elige tu Nivel',
+                rulesStep1Content: 'Adquiere uno de los 4 niveles de participación:',
+                rulesStep2Title: 'Paso 2: Obtén tu Enlace de Referido',
+                rulesStep2Content: 'Después de la activación, recibes un enlace de referido único para invitar participantes.',
+                rulesStep3Title: 'Paso 3: Invita y Gana',
+                rulesStep3Content: 'Recibe bonos de las compras de tu equipo a través del sistema de 3 niveles:',
+                rulesLevel1Label: '1er Nivel',
+                rulesLevel1Text: '(tus invitaciones directas) — ',
+                rulesLevel1Suffix: ' del monto de compra',
+                rulesLevel2Label: '2do Nivel',
+                rulesLevel2Text: '(invitaciones de tus referidos) — ',
+                rulesLevel2Suffix: ' del monto de compra',
+                rulesLevel3Label: '3er Nivel',
+                rulesLevel3Text: '(invitaciones de referidos de 2do nivel) — ',
+                rulesLevel3Suffix: ' del monto de compra',
+                rulesStep4Title: 'Paso 4: Retira tus Fondos',
+                rulesWithdrawal1: 'Retiro disponible después de acumular <strong>x2</strong> de tu depósito',
+                rulesWithdrawal2: 'Monto mínimo de retiro: <strong>$10 USDC</strong>',
+                rulesWithdrawal3: 'Los pagos se realizan en <strong>USDC</strong> a tu billetera Solana',
+                rulesWithdrawal4: 'El procesamiento toma desde minutos hasta 24 horas',
+},
+ar: {
+    selectWallet: 'اختر المحفظة',
+    cancelButton: 'إلغاء',
+    connectWallet: 'ربط المحفظة',
+    badge: '⚡ منصة النمو الأسي',
+    heroLine1: 'ابنِ',
+    heroLine2: 'إمبراطورية الماس',
+    heroSubtitle: 'استفد من قوة التقدم الهندسي. تنمو شبكتك بشكل أسي - كل عضو يضاعف إمكانية أرباحك من خلال ثلاثة مستويات عمولة.',
+    bronze: 'توباز',
+    silver: 'أوبال',
+    gold: 'ياقوت',
+    diamond: 'ماسي',
+    bronzeDesc: 'استثمار المستوى الأولي مع فوائد الشبكة الكاملة',
+    silverDesc: 'المستوى الأمثل للعوائد المتوازنة',
+    goldDesc: 'استثمار متقدم لبناة الشبكات الجادين',
+    diamondDesc: 'المستوى النخبوي للنمو الأسي الأقصى',
+    calcTitle: 'حاسبة النمو',
+    calcSubtitle: 'احسب أرباحك الأسية باستخدام التقدم الهندسي. اضبط المنزلقات لترى كيف تتضاعف شبكتك.',
+    selectTier: 'اختر مستواك',
+    youInvite: 'أنت تدعو',
+    eachInvites: 'كل واحد يدعو',
+    level1: 'المستوى 1 (مباشر)',
+    level2: 'المستوى 2 (×النمو)',
+    level3: 'المستوى 3 (×النمو²)',
+    totalEarnings: 'إجمالي أرباح الشبكة',
+    networkGrowth: 'نمو شبكتك',
+    you: 'أنت',
+    level1Short: 'المستوى 1',
+    level2Short: 'المستوى 2',
+    level3Short: 'المستوى 3',
+    disclaimerTitle: 'إخلاء مسؤولية قانوني مهم',
+    disclaimer1: 'هذه ليست نصيحة مالية. SOLDIA هي منصة شبكة إحالة وليست منتج استثماري أو خدمة مالية أو مخطط استثماري. لا يتم ضمان الأرباح.',
+    disclaimer2: 'مشاركة طوعية. يشارك جميع المشاركين طواعية وعلى مسؤوليتهم الخاصة. تعتمد الأرباح بالكامل على نمو الشبكة والأداء الفردي.',
+    disclaimer3: 'لا ضمانات. الأداء السابق أو التوقعات أو الحسابات المعروضة لا تضمن نتائج مستقبلية. قد تختلف الأرباح الفعلية بشكل كبير أو تكون صفراً.',
+    disclaimer4: 'المسؤولية الشخصية. من خلال المشاركة، فإنك تقر بأنك قرأت وفهمت هذه الشروط وتقبل المسؤولية الكاملة عن قراراتك وأفعالك.',
+    footerRights: 'جميع الحقوق محفوظة.',
+    footerBlockchain: 'مدعوم بواسطة Solana Blockchain',
+                rulesTitle: '🎮 كيف يعمل SOLDIA؟',
+                rulesSubtitle: 'SOLDIA هي لعبة إحالة على بلوكتشين Solana، حيث يعتمد دخلك على نشاط فريقك.',
+                rulesStep1Title: 'الخطوة 1: اختر المستوى',
+                rulesStep1Content: 'اشترِ أحد مستويات المشاركة الأربعة:',
+                rulesStep2Title: 'الخطوة 2: احصل على رابط الإحالة',
+                rulesStep2Content: 'بعد التفعيل، تحصل على رابط إحالة فريد لدعوة المشاركين.',
+                rulesStep3Title: 'الخطوة 3: ادعُ واكسب',
+                rulesStep3Content: 'احصل على مكافآت من مشتريات فريقك من خلال نظام 3 مستويات:',
+                rulesLevel1Label: 'المستوى 1',
+                rulesLevel1Text: '(دعواتك المباشرة) — ',
+                rulesLevel1Suffix: ' من مبلغ الشراء',
+                rulesLevel2Label: 'المستوى 2',
+                rulesLevel2Text: '(دعوات إحالاتك) — ',
+                rulesLevel2Suffix: ' من مبلغ الشراء',
+                rulesLevel3Label: 'المستوى 3',
+                rulesLevel3Text: '(دعوات إحالات المستوى 2) — ',
+                rulesLevel3Suffix: ' من مبلغ الشراء',
+                rulesStep4Title: 'الخطوة 4: سحب الأموال',
+                rulesWithdrawal1: 'السحب متاح بعد تجميع <strong>x2</strong> من إيداعك',
+                rulesWithdrawal2: 'الحد الأدنى لمبلغ السحب: <strong>$10 USDC</strong>',
+                rulesWithdrawal3: 'تتم الدفعات بـ <strong>USDC</strong> إلى محفظة Solana الخاصة بك',
+                rulesWithdrawal4: 'تستغرق المعالجة من دقائق إلى 24 ساعة',
+},
+hi: {
+    selectWallet: 'वॉलेट चुनें',
+    cancelButton: 'रद्द करें',
+    connectWallet: 'वॉलेट कनेक्ट करें',
+    badge: '⚡ एक्सपोनेंशियल ग्रोथ प्लेटफॉर्म',
+    heroLine1: 'अपना',
+    heroLine2: 'डायमंड साम्राज्य बनाएं',
+    heroSubtitle: 'ज्यामितीय प्रगति की शक्ति का उपयोग करें। आपका नेटवर्क तेजी से बढ़ता है - प्रत्येक सदस्य तीन कमीशन स्तरों के माध्यम से आपकी कमाई क्षमता को गुणा करता है।',
+    bronze: 'पुखराज',
+    silver: 'ओपल',
+    gold: 'नीलम',
+    diamond: 'हीरा',
+    bronzeDesc: 'पूर्ण नेटवर्क लाभों के साथ प्रवेश स्तर का निवेश',
+    silverDesc: 'संतुलित रिटर्न के लिए इष्टतम स्तर',
+    goldDesc: 'गंभीर नेटवर्कर्स के लिए उन्नत निवेश',
+    diamondDesc: 'अधिकतम तेजी से वृद्धि के लिए एलीट स्तर',
+    calcTitle: 'विकास कैलकुलेटर',
+    calcSubtitle: 'ज्यामितीय प्रगति का उपयोग करके अपनी तेजी से कमाई की गणना करें। अपने नेटवर्क को कैसे गुणा होते देखने के लिए स्लाइडर समायोजित करें।',
+    selectTier: 'अपना स्तर चुनें',
+    youInvite: 'आप आमंत्रित करें',
+    eachInvites: 'प्रत्येक आमंत्रित करता है',
+    level1: 'स्तर 1 (प्रत्यक्ष)',
+    level2: 'स्तर 2 (×वृद्धि)',
+    level3: 'स्तर 3 (×वृद्धि²)',
+    totalEarnings: 'कुल नेटवर्क कमाई',
+    networkGrowth: 'आपके नेटवर्क की वृद्धि',
+    you: 'आप',
+    level1Short: 'स्तर 1',
+    level2Short: 'स्तर 2',
+    level3Short: 'स्तर 3',
+    disclaimerTitle: 'महत्वपूर्ण कानूनी अस्वीकरण',
+    disclaimer1: 'यह वित्तीय सलाह नहीं है। SOLDIA एक रेफरल नेटवर्क प्लेटफॉर्म है न कि निवेश उत्पाद, वित्तीय सेवा या निवेश योजना। लाभ की गारंटी नहीं है।',
+    disclaimer2: 'स्वैच्छिक भागीदारी। सभी प्रतिभागी स्वेच्छा से और अपने जोखिम पर शामिल होते हैं। कोई भी कमाई पूरी तरह से नेटवर्क वृद्धि और व्यक्तिगत प्रदर्शन पर निर्भर करती है।',
+    disclaimer3: 'कोई गारंटी नहीं। पिछला प्रदर्शन, अनुमान या दिखाई गई गणनाएं भविष्य के परिणामों की गारंटी नहीं देती हैं। वास्तविक कमाई काफी भिन्न हो सकती है या शून्य हो सकती है।',
+    disclaimer4: 'व्यक्तिगत जिम्मेदारी। भाग लेकर, आप स्वीकार करते हैं कि आपने इन शर्तों को पढ़ा और समझा है और अपने निर्णयों और कार्यों के लिए पूर्ण जिम्मेदारी स्वीकार करते हैं।',
+    footerRights: 'सर्वाधिकार सुरक्षित।',
+    footerBlockchain: 'Solana Blockchain द्वारा संचालित',
+                rulesTitle: '🎮 SOLDIA कैसे काम करता है?',
+                rulesSubtitle: 'SOLDIA Solana ब्लॉकचेन पर एक रेफरल गेम है, जहां आपकी आय टीम की गतिविधि पर निर्भर करती है।',
+                rulesStep1Title: 'चरण 1: स्तर चुनें',
+                rulesStep1Content: '4 भागीदारी स्तरों में से एक खरीदें:',
+                rulesStep2Title: 'चरण 2: रेफरल लिंक प्राप्त करें',
+                rulesStep2Content: 'सक्रियण के बाद, आपको प्रतिभागियों को आमंत्रित करने के लिए एक अद्वितीय रेफरल लिंक मिलता है।',
+                rulesStep3Title: 'चरण 3: आमंत्रित करें और कमाएं',
+                rulesStep3Content: '3-स्तरीय प्रणाली के माध्यम से अपनी टीम की खरीदारी से बोनस प्राप्त करें:',
+                rulesLevel1Label: 'स्तर 1',
+                rulesLevel1Text: '(आपके सीधे आमंत्रण) — ',
+                rulesLevel1Suffix: ' खरीद राशि का',
+                rulesLevel2Label: 'स्तर 2',
+                rulesLevel2Text: '(आपके रेफरल के आमंत्रण) — ',
+                rulesLevel2Suffix: ' खरीद राशि का',
+                rulesLevel3Label: 'स्तर 3',
+                rulesLevel3Text: '(स्तर 2 रेफरल के आमंत्रण) — ',
+                rulesLevel3Suffix: ' खरीद राशि का',
+                rulesStep4Title: 'चरण 4: धनराशि निकालें',
+                rulesWithdrawal1: 'आपकी जमा राशि का <strong>x2</strong> जमा करने के बाद निकासी उपलब्ध',
+                rulesWithdrawal2: 'न्यूनतम निकासी राशि: <strong>$10 USDC</strong>',
+                rulesWithdrawal3: 'आपके Solana वॉलेट में <strong>USDC</strong> में भुगतान किया जाता है',
+                rulesWithdrawal4: 'प्रसंस्करण में मिनट से लेकर 24 घंटे तक का समय लगता है',
+},
+zh: {
+    selectWallet: '选择钱包',
+    cancelButton: '取消',
+    connectWallet: '连接钱包',
+    badge: '⚡ 指数增长平台',
+    heroLine1: '建立您的',
+    heroLine2: '钻石帝国',
+    heroSubtitle: '利用几何级数的力量。您的网络呈指数增长 - 每个成员通过三个佣金层级倍增您的盈利潜力。',
+    bronze: '黄玉',
+    silver: '蛋白石',
+    gold: '蓝宝石',
+    diamond: '钻石',
+    bronzeDesc: '入门级投资，享有完整网络福利',
+    silverDesc: '平衡回报的最佳层级',
+    goldDesc: '为认真的网络营销者提供的高级投资',
+    diamondDesc: '最大指数增长的精英层级',
+    calcTitle: '增长计算器',
+    calcSubtitle: '使用几何级数计算您的指数收益。调整滑块以查看您的网络如何倍增。',
+    selectTier: '选择您的等级',
+    youInvite: '您邀请',
+    eachInvites: '每人邀请',
+    level1: '第1级（直接）',
+    level2: '第2级（×增长）',
+    level3: '第3级（×增长²）',
+    totalEarnings: '网络总收益',
+    networkGrowth: '您的网络增长',
+    you: '您',
+    level1Short: '第1级',
+    level2Short: '第2级',
+    level3Short: '第3级',
+    disclaimerTitle: '重要法律免责声明',
+    disclaimer1: '这不是财务建议。SOLDIA是推荐网络平台，不是投资产品、金融服务或投资计划。不保证利润。',
+    disclaimer2: '自愿参与。所有参与者自愿参与并自行承担风险。任何收益完全取决于网络增长和个人表现。',
+    disclaimer3: '无保证。过往表现、预测或显示的计算不保证未来结果。实际收益可能有很大差异或为零。',
+    disclaimer4: '个人责任。通过参与，您承认已阅读并理解这些条款，并对您的决定和行为承担全部责任。',
+    footerRights: '版权所有。',
+    footerBlockchain: '由 Solana 区块链提供支持',
+                rulesTitle: '🎮 SOLDIA如何运作？',
+                rulesSubtitle: 'SOLDIA是Solana区块链上的推荐游戏，您的收入取决于团队活动。',
+                rulesStep1Title: '第1步：选择级别',
+                rulesStep1Content: '购买4个参与级别之一：',
+                rulesStep2Title: '第2步：获取推荐链接',
+                rulesStep2Content: '激活后，您将获得一个独特的推荐链接来邀请参与者。',
+                rulesStep3Title: '第3步：邀请并赚取',
+                rulesStep3Content: '通过3级系统从您团队的购买中获得奖金：',
+                rulesLevel1Label: '第1级',
+                rulesLevel1Text: '（您的直接邀请）— ',
+                rulesLevel1Suffix: ' 购买金额',
+                rulesLevel2Label: '第2级',
+                rulesLevel2Text: '（您推荐人的邀请）— ',
+                rulesLevel2Suffix: ' 购买金额',
+                rulesLevel3Label: '第3级',
+                rulesLevel3Text: '（第2级推荐人的邀请）— ',
+                rulesLevel3Suffix: ' 购买金额',
+                rulesStep4Title: '第4步：提取资金',
+                rulesWithdrawal1: '在累积您存款的<strong>x2</strong>后可提取',
+                rulesWithdrawal2: '最低提取金额：<strong>$10 USDC</strong>',
+                rulesWithdrawal3: '以<strong>USDC</strong>支付到您的Solana钱包',
+                rulesWithdrawal4: '处理需要几分钟到24小时',
+},
+fr: {
+    selectWallet: 'Sélectionner Portefeuille',
+    cancelButton: 'Annuler',
+    connectWallet: 'Connecter Portefeuille',
+    badge: '⚡ Plateforme de Croissance Exponentielle',
+    heroLine1: 'CONSTRUISEZ VOTRE',
+    heroLine2: 'EMPIRE DIAMANT',
+    heroSubtitle: 'Exploitez la puissance de la progression géométrique. Votre réseau croît exponentiellement - chaque membre multiplie votre potentiel de gains à travers trois niveaux de commission.',
+    bronze: 'Topaze',
+    silver: 'Opale',
+    gold: 'Saphir',
+    diamond: 'Diamant',
+    bronzeDesc: 'Investissement de niveau débutant avec tous les avantages du réseau',
+    silverDesc: 'Niveau optimal pour des rendements équilibrés',
+    goldDesc: 'Investissement avancé pour les networkers sérieux',
+    diamondDesc: 'Niveau élite pour une croissance exponentielle maximale',
+    calcTitle: 'CALCULATEUR DE CROISSANCE',
+    calcSubtitle: 'Calculez vos gains exponentiels en utilisant la progression géométrique. Ajustez les curseurs pour voir comment votre réseau se multiplie.',
+    selectTier: 'Sélectionnez Votre Niveau',
+    youInvite: 'Vous Invitez',
+    eachInvites: 'Chacun Invite',
+    level1: 'Niveau 1 (Direct)',
+    level2: 'Niveau 2 (×Croissance)',
+    level3: 'Niveau 3 (×Croissance²)',
+    totalEarnings: 'Gains Totaux du Réseau',
+    networkGrowth: 'Croissance de Votre Réseau',
+    you: 'VOUS',
+    level1Short: 'NIVEAU 1',
+    level2Short: 'NIVEAU 2',
+    level3Short: 'NIVEAU 3',
+    disclaimerTitle: 'Avertissement Juridique Important',
+    disclaimer1: 'Ceci n\'est pas un conseil financier. SOLDIA est une plateforme de réseau de parrainage et non un produit d\'investissement, un service financier ou un schéma d\'investissement. Aucun profit n\'est garanti.',
+    disclaimer2: 'Participation volontaire. Tous les participants s\'engagent volontairement et à leurs propres risques. Les gains dépendent entièrement de la croissance du réseau et des performances individuelles.',
+    disclaimer3: 'Aucune garantie. Les performances passées, les projections ou les calculs affichés ne garantissent pas les résultats futurs. Les gains réels peuvent varier considérablement ou être nuls.',
+    disclaimer4: 'Responsabilité personnelle. En participant, vous reconnaissez avoir lu et compris ces conditions et acceptez l\'entière responsabilité de vos décisions et actions.',
+    footerRights: 'Tous droits réservés.',
+    footerBlockchain: 'Propulsé par Blockchain Solana',
+                rulesTitle: '🎮 COMMENT FONCTIONNE SOLDIA ?',
+                rulesSubtitle: 'SOLDIA est un jeu de parrainage sur la blockchain Solana, où vos revenus dépendent de l\'activité de votre équipe.',
+                rulesStep1Title: 'Étape 1 : Choisissez votre Niveau',
+                rulesStep1Content: 'Achetez l\'un des 4 niveaux de participation :',
+                rulesStep2Title: 'Étape 2 : Obtenez votre Lien de Parrainage',
+                rulesStep2Content: 'Après l\'activation, vous recevez un lien de parrainage unique pour inviter des participants.',
+                rulesStep3Title: 'Étape 3 : Invitez et Gagnez',
+                rulesStep3Content: 'Recevez des bonus sur les achats de votre équipe via le système à 3 niveaux :',
+                rulesLevel1Label: '1er Niveau',
+                rulesLevel1Text: '(vos invitations directes) — ',
+                rulesLevel1Suffix: ' du montant d\'achat',
+                rulesLevel2Label: '2ème Niveau',
+                rulesLevel2Text: '(invitations de vos parrainés) — ',
+                rulesLevel2Suffix: ' du montant d\'achat',
+                rulesLevel3Label: '3ème Niveau',
+                rulesLevel3Text: '(invitations des parrainés de niveau 2) — ',
+                rulesLevel3Suffix: ' du montant d\'achat',
+                rulesStep4Title: 'Étape 4 : Retirez vos Fonds',
+                rulesWithdrawal1: 'Retrait disponible après avoir accumulé <strong>x2</strong> de votre dépôt',
+                rulesWithdrawal2: 'Montant minimum de retrait : <strong>$10 USDC</strong>',
+                rulesWithdrawal3: 'Les paiements sont effectués en <strong>USDC</strong> sur votre portefeuille Solana',
+                rulesWithdrawal4: 'Le traitement prend de quelques minutes à 24 heures',
+},
+de: {
+    selectWallet: 'Wallet Auswählen',
+    cancelButton: 'Abbrechen',
+    connectWallet: 'Wallet Verbinden',
+    badge: '⚡ Exponentielle Wachstumsplattform',
+    heroLine1: 'BAUE DEIN',
+    heroLine2: 'DIAMANT-IMPERIUM',
+    heroSubtitle: 'Nutzen Sie die Kraft der geometrischen Progression. Ihr Netzwerk wächst exponentiell - jedes Mitglied multipliziert Ihr Verdienstpotenzial durch drei Provisionsstufen.',
+    bronze: 'Topaze',
+    silver: 'Opal',
+    gold: 'Saphir',
+    diamond: 'Diamant',
+    bronzeDesc: 'Einstiegsinvestition mit vollen Netzwerkvorteilen',
+    silverDesc: 'Optimale Stufe für ausgewogene Renditen',
+    goldDesc: 'Fortgeschrittene Investition für ernsthafte Netzwerker',
+    diamondDesc: 'Elite-Stufe für maximales exponentielles Wachstum',
+    calcTitle: 'WACHSTUMSRECHNER',
+    calcSubtitle: 'Berechnen Sie Ihre exponentiellen Gewinne mit geometrischer Progression. Passen Sie die Schieberegler an, um zu sehen, wie sich Ihr Netzwerk multipliziert.',
+    selectTier: 'Wählen Sie Ihre Stufe',
+    youInvite: 'Sie Laden Ein',
+    eachInvites: 'Jeder Lädt Ein',
+    level1: 'Stufe 1 (Direkt)',
+    level2: 'Stufe 2 (×Wachstum)',
+    level3: 'Stufe 3 (×Wachstum²)',
+    totalEarnings: 'Gesamte Netzwerkeinnahmen',
+    networkGrowth: 'Ihr Netzwerkwachstum',
+    you: 'SIE',
+    level1Short: 'STUFE 1',
+    level2Short: 'STUFE 2',
+    level3Short: 'STUFE 3',
+    disclaimerTitle: 'Wichtiger Rechtlicher Haftungsausschluss',
+    disclaimer1: 'Dies ist keine Finanzberatung. SOLDIA ist eine Empfehlungsnetzwerk-Plattform und kein Anlageprodukt, keine Finanzdienstleistung oder kein Anlagesystem. Gewinne sind nicht garantiert.',
+    disclaimer2: 'Freiwillige Teilnahme. Alle Teilnehmer beteiligen sich freiwillig und auf eigenes Risiko. Jegliche Einnahmen hängen vollständig vom Netzwerkwachstum und der individuellen Leistung ab.',
+    disclaimer3: 'Keine Garantien. Vergangene Leistungen, Prognosen oder angezeigte Berechnungen garantieren keine zukünftigen Ergebnisse. Tatsächliche Einnahmen können erheblich variieren oder null sein.',
+    disclaimer4: 'Persönliche Verantwortung. Durch die Teilnahme bestätigen Sie, dass Sie diese Bedingungen gelesen und verstanden haben und die volle Verantwortung für Ihre Entscheidungen und Handlungen übernehmen.',
+    footerRights: 'Alle Rechte vorbehalten.',
+    footerBlockchain: 'Powered by Solana Blockchain',
+                rulesTitle: '🎮 WIE FUNKTIONIERT SOLDIA?',
+                rulesSubtitle: 'SOLDIA ist ein Empfehlungsspiel auf der Solana-Blockchain, bei dem Ihr Einkommen von der Aktivität Ihres Teams abhängt.',
+                rulesStep1Title: 'Schritt 1: Wählen Sie Ihr Level',
+                rulesStep1Content: 'Erwerben Sie eines von 4 Teilnahmelevels:',
+                rulesStep2Title: 'Schritt 2: Erhalten Sie Ihren Empfehlungslink',
+                rulesStep2Content: 'Nach der Aktivierung erhalten Sie einen einzigartigen Empfehlungslink zur Einladung von Teilnehmern.',
+                rulesStep3Title: 'Schritt 3: Einladen und Verdienen',
+                rulesStep3Content: 'Erhalten Sie Boni aus den Käufen Ihres Teams durch das 3-Stufen-System:',
+                rulesLevel1Label: '1. Stufe',
+                rulesLevel1Text: '(Ihre direkten Einladungen) — ',
+                rulesLevel1Suffix: ' vom Kaufbetrag',
+                rulesLevel2Label: '2. Stufe',
+                rulesLevel2Text: '(Einladungen Ihrer Empfehlungen) — ',
+                rulesLevel2Suffix: ' vom Kaufbetrag',
+                rulesLevel3Label: '3. Stufe',
+                rulesLevel3Text: '(Einladungen von Stufe-2-Empfehlungen) — ',
+                rulesLevel3Suffix: ' vom Kaufbetrag',
+                rulesStep4Title: 'Schritt 4: Geld Abheben',
+                rulesWithdrawal1: 'Abhebung verfügbar nach Erreichen von <strong>x2</strong> Ihrer Einzahlung',
+                rulesWithdrawal2: 'Mindestabhebungsbetrag: <strong>$10 USDC</strong>',
+                rulesWithdrawal3: 'Auszahlungen erfolgen in <strong>USDC</strong> an Ihre Solana-Wallet',
+                rulesWithdrawal4: 'Bearbeitung dauert von Minuten bis zu 24 Stunden',
+},
+pt: {
+    selectWallet: 'Selecionar Carteira',
+    cancelButton: 'Cancelar',
+    connectWallet: 'Conectar Carteira',
+    badge: '⚡ Plataforma de Crescimento Exponencial',
+    heroLine1: 'CONSTRUA SEU',
+    heroLine2: 'IMPÉRIO DIAMANTE',
+    heroSubtitle: 'Aproveite o poder da progressão geométrica. Sua rede cresce exponencialmente - cada membro multiplica seu potencial de ganhos através de três níveis de comissão.',
+    bronze: 'Topaze',
+    silver: 'Opala',
+    gold: 'Safira',
+    diamond: 'Diamante',
+    bronzeDesc: 'Investimento de nível inicial com benefícios completos de rede',
+    silverDesc: 'Nível ótimo para retornos equilibrados',
+    goldDesc: 'Investimento avançado para networkers sérios',
+    diamondDesc: 'Nível elite para máximo crescimento exponencial',
+    calcTitle: 'CALCULADORA DE CRESCIMENTO',
+    calcSubtitle: 'Calcule seus ganhos exponenciais usando progressão geométrica. Ajuste os controles deslizantes para ver como sua rede se multiplica.',
+    selectTier: 'Selecione Seu Nível',
+    youInvite: 'Você Convida',
+    eachInvites: 'Cada Um Convida',
+    level1: 'Nível 1 (Direto)',
+    level2: 'Nível 2 (×Crescimento)',
+    level3: 'Nível 3 (×Crescimento²)',
+    totalEarnings: 'Ganhos Totais da Rede',
+    networkGrowth: 'Crescimento da Sua Rede',
+    you: 'VOCÊ',
+    level1Short: 'NÍVEL 1',
+    level2Short: 'NÍVEL 2',
+    level3Short: 'NÍVEL 3',
+    disclaimerTitle: 'Aviso Legal Importante',
+    disclaimer1: 'Isto não é aconselhamento financeiro. SOLDIA é uma plataforma de rede de referência e não um produto de investimento, serviço financeiro ou esquema de investimento. Nenhum lucro é garantido.',
+    disclaimer2: 'Participação voluntária. Todos os participantes se envolvem voluntariamente e por sua própria conta e risco. Quaisquer ganhos dependem inteiramente do crescimento da rede e do desempenho individual.',
+    disclaimer3: 'Sem garantias. O desempenho passado, projeções ou cálculos mostrados não garantem resultados futuros. Os ganhos reais podem variar significativamente ou ser zero.',
+    disclaimer4: 'Responsabilidade pessoal. Ao participar, você reconhece que leu e compreendeu estes termos e aceita total responsabilidade por suas decisões e ações.',
+    footerRights: 'Todos os direitos reservados.',
+    footerBlockchain: 'Powered by Solana Blockchain',
+                rulesTitle: '🎮 COMO FUNCIONA O SOLDIA?',
+                rulesSubtitle: 'SOLDIA é um jogo de indicação na blockchain Solana, onde sua renda depende da atividade da sua equipe.',
+                rulesStep1Title: 'Passo 1: Escolha o Nível',
+                rulesStep1Content: 'Adquira um dos 4 níveis de participação:',
+                rulesStep2Title: 'Passo 2: Obtenha seu Link de Indicação',
+                rulesStep2Content: 'Após a ativação, você recebe um link de indicação único para convidar participantes.',
+                rulesStep3Title: 'Passo 3: Convide e Ganhe',
+                rulesStep3Content: 'Receba bônus das compras da sua equipe através do sistema de 3 níveis:',
+                rulesLevel1Label: '1º Nível',
+                rulesLevel1Text: '(seus convites diretos) — ',
+                rulesLevel1Suffix: ' do valor da compra',
+                rulesLevel2Label: '2º Nível',
+                rulesLevel2Text: '(convites dos seus indicados) — ',
+                rulesLevel2Suffix: ' do valor da compra',
+                rulesLevel3Label: '3º Nível',
+                rulesLevel3Text: '(convites dos indicados de 2º nível) — ',
+                rulesLevel3Suffix: ' do valor da compra',
+                rulesStep4Title: 'Passo 4: Saque seus Fundos',
+                rulesWithdrawal1: 'Saque disponível após acumular <strong>x2</strong> do seu depósito',
+                rulesWithdrawal2: 'Valor mínimo de saque: <strong>$10 USDC</strong>',
+                rulesWithdrawal3: 'Pagamentos são feitos em <strong>USDC</strong> para sua carteira Solana',
+                rulesWithdrawal4: 'Processamento leva de minutos a 24 horas',
+},
+id: {
+    selectWallet: 'Pilih Dompet',
+    cancelButton: 'Batal',
+    connectWallet: 'Hubungkan Dompet',
+    badge: '⚡ Platform Pertumbuhan Eksponensial',
+    heroLine1: 'BANGUN',
+    heroLine2: 'KERAJAAN BERLIAN ANDA',
+    heroSubtitle: 'Manfaatkan kekuatan progresi geometris. Jaringan Anda tumbuh secara eksponensial - setiap anggota melipatgandakan potensi penghasilan Anda melalui tiga tingkat komisi.',
+    bronze: 'Topaz',
+    silver: 'Opal',
+    gold: 'Safir',
+    diamond: 'Berlian',
+    bronzeDesc: 'Investasi tingkat pemula dengan manfaat jaringan penuh',
+    silverDesc: 'Tingkat optimal untuk pengembalian seimbang',
+    goldDesc: 'Investasi lanjutan untuk networker serius',
+    diamondDesc: 'Tingkat elit untuk pertumbuhan eksponensial maksimal',
+    calcTitle: 'KALKULATOR PERTUMBUHAN',
+    calcSubtitle: 'Hitung penghasilan eksponensial Anda menggunakan progresi geometris. Sesuaikan slider untuk melihat bagaimana jaringan Anda berkembang.',
+    selectTier: 'Pilih Tingkat Anda',
+    youInvite: 'Anda Mengundang',
+    eachInvites: 'Setiap Orang Mengundang',
+    level1: 'Level 1 (Langsung)',
+    level2: 'Level 2 (×Pertumbuhan)',
+    level3: 'Level 3 (×Pertumbuhan²)',
+    totalEarnings: 'Total Penghasilan Jaringan',
+    networkGrowth: 'Pertumbuhan Jaringan Anda',
+    you: 'ANDA',
+    level1Short: 'LEVEL 1',
+    level2Short: 'LEVEL 2',
+    level3Short: 'LEVEL 3',
+    disclaimerTitle: 'Penyangkalan Hukum Penting',
+    disclaimer1: 'Ini bukan saran keuangan. SOLDIA adalah platform jaringan rujukan dan bukan produk investasi, layanan keuangan, atau skema investasi. Tidak ada keuntungan yang dijamin.',
+    disclaimer2: 'Partisipasi sukarela. Semua peserta terlibat secara sukarela dan atas risiko mereka sendiri. Penghasilan apa pun sepenuhnya bergantung pada pertumbuhan jaringan dan kinerja individu.',
+    disclaimer3: 'Tanpa jaminan. Kinerja masa lalu, proyeksi, atau perhitungan yang ditampilkan tidak menjamin hasil di masa depan. Penghasilan aktual dapat sangat bervariasi atau nol.',
+    disclaimer4: 'Tanggung jawab pribadi. Dengan berpartisipasi, Anda mengakui bahwa Anda telah membaca dan memahami ketentuan ini dan menerima tanggung jawab penuh atas keputusan dan tindakan Anda.',
+    footerRights: 'Hak cipta dilindungi.',
+    footerBlockchain: 'Didukung oleh Solana Blockchain',
+                rulesTitle: '🎮 CARA KERJA SOLDIA',
+                rulesSubtitle: 'SOLDIA adalah permainan referral di blockchain Solana, di mana pendapatan Anda tergantung pada aktivitas tim.',
+                rulesStep1Title: 'Langkah 1: Pilih Level',
+                rulesStep1Content: 'Beli salah satu dari 4 level partisipasi:',
+                rulesStep2Title: 'Langkah 2: Dapatkan Link Referral',
+                rulesStep2Content: 'Setelah aktivasi, Anda menerima link referral unik untuk mengundang peserta.',
+                rulesStep3Title: 'Langkah 3: Undang dan Hasilkan',
+                rulesStep3Content: 'Terima bonus dari pembelian tim Anda melalui sistem 3 level:',
+                rulesLevel1Label: 'Level 1',
+                rulesLevel1Text: '(undangan langsung Anda) — ',
+                rulesLevel1Suffix: ' dari jumlah pembelian',
+                rulesLevel2Label: 'Level 2',
+                rulesLevel2Text: '(undangan referral Anda) — ',
+                rulesLevel2Suffix: ' dari jumlah pembelian',
+                rulesLevel3Label: 'Level 3',
+                rulesLevel3Text: '(undangan referral level 2) — ',
+                rulesLevel3Suffix: ' dari jumlah pembelian',
+                rulesStep4Title: 'Langkah 4: Tarik Dana',
+                rulesWithdrawal1: 'Penarikan tersedia setelah mengumpulkan <strong>x2</strong> dari deposit Anda',
+                rulesWithdrawal2: 'Jumlah penarikan minimum: <strong>$10 USDC</strong>',
+                rulesWithdrawal3: 'Pembayaran dilakukan dalam <strong>USDC</strong> ke dompet Solana Anda',
+                rulesWithdrawal4: 'Pemrosesan memakan waktu dari menit hingga 24 jam',
+},
+tr: {
+    selectWallet: 'Cüzdan Seç',
+    cancelButton: 'İptal',
+    connectWallet: 'Cüzdan Bağla',
+    badge: '⚡ Üstel Büyüme Platformu',
+    heroLine1: 'ELMAS',
+    heroLine2: 'İMPARATORLUĞUNUZU KURUN',
+    heroSubtitle: 'Geometrik ilerlemenin gücünden yararlanın. Ağınız katlanarak büyür - her üye üç komisyon seviyesi aracılığıyla kazanç potansiyelinizi çoğaltır.',
+    bronze: 'Topaz',
+    silver: 'Opal',
+    gold: 'Safir',
+    diamond: 'Elmas',
+    bronzeDesc: 'Tam ağ avantajlarıyla giriş seviyesi yatırım',
+    silverDesc: 'Dengeli getiriler için optimal seviye',
+    goldDesc: 'Ciddi networkerlar için gelişmiş yatırım',
+    diamondDesc: 'Maksimum üstel büyüme için elit seviye',
+    calcTitle: 'BÜYÜME HESAPLAYICI',
+    calcSubtitle: 'Geometrik ilerleme kullanarak üstel kazançlarınızı hesaplayın. Ağınızın nasıl çoğaldığını görmek için kaydırıcıları ayarlayın.',
+    selectTier: 'Seviyenizi Seçin',
+    youInvite: 'Siz Davet Edin',
+    eachInvites: 'Her Biri Davet Eder',
+    level1: 'Seviye 1 (Doğrudan)',
+    level2: 'Seviye 2 (×Büyüme)',
+    level3: 'Seviye 3 (×Büyüme²)',
+    totalEarnings: 'Toplam Ağ Kazancı',
+    networkGrowth: 'Ağınızın Büyümesi',
+    you: 'SİZ',
+    level1Short: 'SEVİYE 1',
+    level2Short: 'SEVİYE 2',
+    level3Short: 'SEVİYE 3',
+    disclaimerTitle: 'Önemli Yasal Sorumluluk Reddi',
+    disclaimer1: 'Bu finansal tavsiye değildir. SOLDIA bir yönlendirme ağı platformudur ve bir yatırım ürünü, finansal hizmet veya yatırım planı değildir. Kâr garanti edilmez.',
+    disclaimer2: 'Gönüllü katılım. Tüm katılımcılar gönüllü olarak ve kendi riskleri altında katılır. Kazançlar tamamen ağ büyümesine ve bireysel performansa bağlıdır.',
+    disclaimer3: 'Garanti yok. Geçmiş performans, tahminler veya gösterilen hesaplamalar gelecekteki sonuçları garanti etmez. Gerçek kazançlar önemli ölçüde değişebilir veya sıfır olabilir.',
+    disclaimer4: 'Kişisel sorumluluk. Katılarak, bu şartları okuduğunuzu ve anladığınızı kabul eder ve kararlarınız ve eylemleriniz için tam sorumluluk kabul edersiniz.',
+    footerRights: 'Tüm hakları saklıdır.',
+    footerBlockchain: 'Solana Blockchain ile Güçlendirildi',
+                rulesTitle: '🎮 SOLDIA NASIL ÇALIŞIR?',
+                rulesSubtitle: 'SOLDIA, Solana blockchain\'inde gelirinizin ekip aktivitesine bağlı olduğu bir referans oyunudur.',
+                rulesStep1Title: 'Adım 1: Seviye Seçin',
+                rulesStep1Content: '4 katılım seviyesinden birini satın alın:',
+                rulesStep2Title: 'Adım 2: Referans Bağlantısı Alın',
+                rulesStep2Content: 'Aktivasyondan sonra, katılımcıları davet etmek için benzersiz bir referans bağlantısı alırsınız.',
+                rulesStep3Title: 'Adım 3: Davet Edin ve Kazanın',
+                rulesStep3Content: 'Ekibinizin satın alımlarından 3 seviyeli sistem aracılığıyla bonus alın:',
+                rulesLevel1Label: '1. Seviye',
+                rulesLevel1Text: '(doğrudan davetleriniz) — ',
+                rulesLevel1Suffix: ' satın alma tutarından',
+                rulesLevel2Label: '2. Seviye',
+                rulesLevel2Text: '(referanslarınızın davetleri) — ',
+                rulesLevel2Suffix: ' satın alma tutarından',
+                rulesLevel3Label: '3. Seviye',
+                rulesLevel3Text: '(2. seviye referansların davetleri) — ',
+                rulesLevel3Suffix: ' satın alma tutarından',
+                rulesStep4Title: 'Adım 4: Para Çekin',
+                rulesWithdrawal1: 'Depozitonuzun <strong>x2</strong>\'sini biriktirdikten sonra çekim yapılabilir',
+                rulesWithdrawal2: 'Minimum çekim tutarı: <strong>$10 USDC</strong>',
+                rulesWithdrawal3: 'Ödemeler Solana cüzdanınıza <strong>USDC</strong> olarak yapılır',
+                rulesWithdrawal4: 'İşlem dakikalar ile 24 saat arasında sürer',
+},
+ko: {
+    selectWallet: '지갑 선택',
+    cancelButton: '취소',
+    connectWallet: '지갑 연결',
+    badge: '⚡ 기하급수적 성장 플랫폼',
+    heroLine1: '당신의',
+    heroLine2: '다이아몬드 제국을 구축하세요',
+    heroSubtitle: '기하급수적 진행의 힘을 활용하세요. 귀하의 네트워크는 기하급수적으로 성장합니다 - 각 회원은 세 가지 수수료 계층을 통해 귀하의 수익 잠재력을 배가시킵니다.',
+    bronze: '토파즈',
+    silver: '오팔',
+    gold: '사파이어',
+    diamond: '다이아몬드',
+    bronzeDesc: '전체 네트워크 혜택이 있는 입문 수준 투자',
+    silverDesc: '균형 잡힌 수익을 위한 최적 계층',
+    goldDesc: '진지한 네트워커를 위한 고급 투자',
+    diamondDesc: '최대 기하급수적 성장을 위한 엘리트 계층',
+    calcTitle: '성장 계산기',
+    calcSubtitle: '기하급수적 진행을 사용하여 기하급수적 수익을 계산하세요. 슬라이더를 조정하여 네트워크가 어떻게 배가되는지 확인하세요.',
+    selectTier: '귀하의 계층을 선택하세요',
+    youInvite: '당신이 초대',
+    eachInvites: '각자 초대',
+    level1: '레벨 1 (직접)',
+    level2: '레벨 2 (×성장)',
+    level3: '레벨 3 (×성장²)',
+    totalEarnings: '총 네트워크 수익',
+    networkGrowth: '귀하의 네트워크 성장',
+    you: '당신',
+    level1Short: '레벨 1',
+    level2Short: '레벨 2',
+    level3Short: '레벨 3',
+    disclaimerTitle: '중요한 법적 면책 조항',
+    disclaimer1: '이것은 재정적 조언이 아닙니다. SOLDIA는 추천 네트워크 플랫폼이며 투자 상품, 금융 서비스 또는 투자 계획이 아닙니다. 수익은 보장되지 않습니다.',
+    disclaimer2: '자발적 참여. 모든 참가자는 자발적으로 그리고 자신의 책임하에 참여합니다. 모든 수익은 전적으로 네트워크 성장과 개인 성과에 달려 있습니다.',
+    disclaimer3: '보장 없음. 과거 성과, 예측 또는 표시된 계산은 미래 결과를 보장하지 않습니다. 실제 수익은 크게 다르거나 0일 수 있습니다.',
+    disclaimer4: '개인 책임. 참여함으로써 귀하는 이 약관을 읽고 이해했음을 인정하며 귀하의 결정과 행동에 대한 전적인 책임을 수락합니다.',
+    footerRights: '모든 권리 보유.',
+    footerBlockchain: 'Solana Blockchain 기반',
+                rulesTitle: '🎮 SOLDIA 작동 방식',
+                rulesSubtitle: 'SOLDIA는 Solana 블록체인의 추천 게임으로, 수입은 팀 활동에 따라 달라집니다.',
+                rulesStep1Title: '1단계: 레벨 선택',
+                rulesStep1Content: '4가지 참여 레벨 중 하나를 구매하세요:',
+                rulesStep2Title: '2단계: 추천 링크 받기',
+                rulesStep2Content: '활성화 후, 참가자를 초대할 고유한 추천 링크를 받습니다.',
+                rulesStep3Title: '3단계: 초대하고 수익 창출',
+                rulesStep3Content: '3단계 시스템을 통해 팀의 구매에서 보너스를 받으세요:',
+                rulesLevel1Label: '1단계',
+                rulesLevel1Text: '(직접 초대) — ',
+                rulesLevel1Suffix: ' 구매 금액',
+                rulesLevel2Label: '2단계',
+                rulesLevel2Text: '(추천인의 초대) — ',
+                rulesLevel2Suffix: ' 구매 금액',
+                rulesLevel3Label: '3단계',
+                rulesLevel3Text: '(2단계 추천인의 초대) — ',
+                rulesLevel3Suffix: ' 구매 금액',
+                rulesStep4Title: '4단계: 자금 인출',
+                rulesWithdrawal1: '예금의 <strong>x2</strong>를 축적한 후 인출 가능',
+                rulesWithdrawal2: '최소 인출 금액: <strong>$10 USDC</strong>',
+                rulesWithdrawal3: '지급은 Solana 지갑으로 <strong>USDC</strong>로 이루어집니다',
+                rulesWithdrawal4: '처리는 몇 분에서 24시간이 소요됩니다',
+},
+it: {
+    selectWallet: 'Seleziona Portafoglio',
+    cancelButton: 'Annulla',
+    connectWallet: 'Connetti Portafoglio',
+    badge: '⚡ Piattaforma di Crescita Esponenziale',
+    heroLine1: 'COSTRUISCI IL TUO',
+    heroLine2: 'IMPERO DIAMANTE',
+    heroSubtitle: 'Sfrutta il potere della progressione geometrica. La tua rete cresce esponenzialmente - ogni membro moltiplica il tuo potenziale di guadagno attraverso tre livelli di commissione.',
+    bronze: 'Topazio',
+    silver: 'Opale',
+    gold: 'Zafiro',
+    diamond: 'Diamante',
+    bronzeDesc: 'Investimento di livello base con vantaggi di rete completi',
+    silverDesc: 'Livello ottimale per rendimenti equilibrati',
+    goldDesc: 'Investimento avanzato per networker seri',
+    diamondDesc: 'Livello elite per massima crescita esponenziale',
+    calcTitle: 'CALCOLATORE DI CRESCITA',
+    calcSubtitle: 'Calcola i tuoi guadagni esponenziali usando la progressione geometrica. Regola i cursori per vedere come si moltiplica la tua rete.',
+    selectTier: 'Seleziona Il Tuo Livello',
+    youInvite: 'Tu Inviti',
+    eachInvites: 'Ognuno Invita',
+    level1: 'Livello 1 (Diretto)',
+    level2: 'Livello 2 (×Crescita)',
+    level3: 'Livello 3 (×Crescita²)',
+    totalEarnings: 'Guadagni Totali della Rete',
+    networkGrowth: 'Crescita della Tua Rete',
+    you: 'TU',
+    level1Short: 'LIVELLO 1',
+    level2Short: 'LIVELLO 2',
+    level3Short: 'LIVELLO 3',
+    disclaimerTitle: 'Importante Esclusione di Responsabilità Legale',
+    disclaimer1: 'Questo non è un consiglio finanziario. SOLDIA è una piattaforma di rete di referral e non un prodotto di investimento, servizio finanziario o schema di investimento. Nessun profitto è garantito.',
+    disclaimer2: 'Partecipazione volontaria. Tutti i partecipanti si impegnano volontariamente e a proprio rischio. Qualsiasi guadagno dipende interamente dalla crescita della rete e dalle prestazioni individuali.',
+    disclaimer3: 'Nessuna garanzia. Le prestazioni passate, le proiezioni o i calcoli mostrati non garantiscono risultati futuri. I guadagni effettivi possono variare in modo significativo o essere zero.',
+    disclaimer4: 'Responsabilità personale. Partecipando, riconosci di aver letto e compreso questi termini e accetti la piena responsabilità per le tue decisioni e azioni.',
+    footerRights: 'Tutti i diritti riservati.',
+    footerBlockchain: 'Powered by Solana Blockchain',
+                rulesTitle: '🎮 COME FUNZIONA SOLDIA?',
+                rulesSubtitle: 'SOLDIA è un gioco di referral sulla blockchain Solana, dove il tuo reddito dipende dall\'attività del tuo team.',
+                rulesStep1Title: 'Passo 1: Scegli il Livello',
+                rulesStep1Content: 'Acquista uno dei 4 livelli di partecipazione:',
+                rulesStep2Title: 'Passo 2: Ottieni il Link di Referral',
+                rulesStep2Content: 'Dopo l\'attivazione, ricevi un link di referral unico per invitare partecipanti.',
+                rulesStep3Title: 'Passo 3: Invita e Guadagna',
+                rulesStep3Content: 'Ricevi bonus dagli acquisti del tuo team tramite il sistema a 3 livelli:',
+                rulesLevel1Label: '1° Livello',
+                rulesLevel1Text: '(i tuoi inviti diretti) — ',
+                rulesLevel1Suffix: ' dell\'importo di acquisto',
+                rulesLevel2Label: '2° Livello',
+                rulesLevel2Text: '(inviti dei tuoi referral) — ',
+                rulesLevel2Suffix: ' dell\'importo di acquisto',
+                rulesLevel3Label: '3° Livello',
+                rulesLevel3Text: '(inviti dei referral di 2° livello) — ',
+                rulesLevel3Suffix: ' dell\'importo di acquisto',
+                rulesStep4Title: 'Passo 4: Preleva Fondi',
+                rulesWithdrawal1: 'Prelievo disponibile dopo aver accumulato <strong>x2</strong> del tuo deposito',
+                rulesWithdrawal2: 'Importo minimo di prelievo: <strong>$10 USDC</strong>',
+                rulesWithdrawal3: 'I pagamenti sono effettuati in <strong>USDC</strong> sul tuo wallet Solana',
+                rulesWithdrawal4: 'L\'elaborazione richiede da minuti a 24 ore',
+},
+uk: {
+    selectWallet: 'Виберіть гаманець',
+    cancelButton: 'Скасувати',
+    connectWallet: 'Підключити гаманець',
+    badge: '⚡ Платформа експоненційного зростання',
+    heroLine1: 'ПОБУДУЙТЕ СВОЮ',
+    heroLine2: 'ДІАМАНТОВУ ІМПЕРІЮ',
+    heroSubtitle: 'Використовуйте силу геометричної прогресії. Ваша мережа зростає експоненційно - кожен учасник множить ваш потенціал заробітку через три рівні комісій.',
+    bronze: 'Топаз',
+    silver: 'Опал',
+    gold: 'Сапфір',
+    diamond: 'Діамант',
+    bronzeDesc: 'Початковий рівень з повними перевагами мережі',
+    silverDesc: 'Оптимальний рівень для збалансованих доходів',
+    goldDesc: 'Просунутий рівень для серйозних учасників',
+    diamondDesc: 'Елітний рівень для максимального зростання',
+    calcTitle: 'КАЛЬКУЛЯТОР ЗРОСТАННЯ',
+    calcSubtitle: 'Розрахуйте ваш експоненційний заробіток використовуючи геометричну прогресію. Налаштуйте повзунки щоб побачити як росте мережа.',
+    selectTier: 'Виберіть Рівень',
+    youInvite: 'Ви запрошуєте',
+    eachInvites: 'Кожен запрошує',
+    level1: 'Рівень 1 (Прямі)',
+    level2: 'Рівень 2 (×Зростання)',
+    level3: 'Рівень 3 (×Зростання²)',
+    totalEarnings: 'Загальний заробіток мережі',
+    networkGrowth: 'Зростання вашої мережі',
+    you: 'ВИ',
+    level1Short: 'РІВЕНЬ 1',
+    level2Short: 'РІВЕНЬ 2',
+    level3Short: 'РІВЕНЬ 3',
+    disclaimerTitle: 'Важливий юридичний дисклеймер',
+    disclaimer1: 'Це не фінансова порада. SOLDIA - це платформа реферальної мережі, а не інвестиційний продукт, фінансова послуга або інвестиційна схема. Прибуток не гарантується.',
+    disclaimer2: 'Добровільна участь. Всі учасники беруть участь добровільно і на свій ризик. Будь-які заробітки залежать виключно від зростання мережі та індивідуальної ефективності.',
+    disclaimer3: 'Жодних гарантій. Минулі результати, прогнози або розрахунки не гарантують майбутніх результатів. Фактичний заробіток може значно відрізнятися або бути нульовим.',
+    disclaimer4: 'Особиста відповідальність. Беручи участь, ви визнаєте, що прочитали і зрозуміли ці умови і приймаєте повну відповідальність за свої рішення та дії.',
+    footerRights: 'Усі права захищені.',
+    footerBlockchain: 'Працює на блокчейні Solana',
+                rulesTitle: '🎮 ЯК ПРАЦЮЄ SOLDIA?',
+                rulesSubtitle: 'SOLDIA — це реферальна гра на блокчейні Solana, де ваш дохід залежить від активності вашої команди.',
+                rulesStep1Title: 'Крок 1: Оберіть рівень',
+                rulesStep1Content: 'Придбайте один з 4 рівнів участі:',
+                rulesStep2Title: 'Крок 2: Отримайте реферальне посилання',
+                rulesStep2Content: 'Після активації ви отримуєте унікальне реферальне посилання для запрошення учасників.',
+                rulesStep3Title: 'Крок 3: Запрошуйте та заробляйте',
+                rulesStep3Content: 'Отримуйте бонуси з покупок вашої команди через 3-рівневу систему:',
+                rulesLevel1Label: '1-й рівень',
+                rulesLevel1Text: '(ваші прямі запрошення) — ',
+                rulesLevel1Suffix: ' від суми покупки',
+                rulesLevel2Label: '2-й рівень',
+                rulesLevel2Text: '(запрошення ваших рефералів) — ',
+                rulesLevel2Suffix: ' від суми покупки',
+                rulesLevel3Label: '3-й рівень',
+                rulesLevel3Text: '(запрошення рефералів 2-го рівня) — ',
+                rulesLevel3Suffix: ' від суми покупки',
+                rulesStep4Title: 'Крок 4: Виводьте кошти',
+                rulesWithdrawal1: 'Вивід доступний після накопичення <strong>x2</strong> від вашого депозиту',
+                rulesWithdrawal2: 'Мінімальна сума виводу: <strong>$10 USDC</strong>',
+                rulesWithdrawal3: 'Виплати здійснюються в <strong>USDC</strong> на ваш Solana гаманець',
+                rulesWithdrawal4: 'Обробка займає від кількох хвилин до 24 годин',
+},
+fa: {
+    selectWallet: 'انتخاب کیف پول',
+    cancelButton: 'لغو',
+    connectWallet: 'اتصال کیف پول',
+    badge: '⚡ پلتفرم رشد نمایی',
+    heroLine1: 'امپراتوری',
+    heroLine2: 'الماس خود را بسازید',
+    heroSubtitle: 'از قدرت پیشرفت هندسی استفاده کنید. شبکه شما به صورت تصاعدی رشد می‌کند - هر عضو پتانسیل درآمد شما را از طریق سه سطح کمیسیون چند برابر می‌کند.',
+    bronze: 'توپاز',
+    silver: 'اوپال',
+    gold: 'یاقوت کبود',
+    diamond: 'الماس',
+    bronzeDesc: 'سرمایه‌گذاری سطح ورودی با مزایای کامل شبکه',
+    silverDesc: 'سطح بهینه برای بازدهی متعادل',
+    goldDesc: 'سرمایه‌گذاری پیشرفته برای شبکه‌سازان جدی',
+    diamondDesc: 'سطح نخبگان برای حداکثر رشد نمایی',
+    calcTitle: 'ماشین حساب رشد',
+    calcSubtitle: 'درآمد نمایی خود را با استفاده از پیشرفت هندسی محاسبه کنید. نوارهای لغزنده را تنظیم کنید تا ببینید شبکه شما چگونه چند برابر می‌شود.',
+    selectTier: 'سطح خود را انتخاب کنید',
+    youInvite: 'شما دعوت می‌کنید',
+    eachInvites: 'هر کس دعوت می‌کند',
+    level1: 'سطح 1 (مستقیم)',
+    level2: 'سطح 2 (×رشد)',
+    level3: 'سطح 3 (×رشد²)',
+    totalEarnings: 'کل درآمد شبکه',
+    networkGrowth: 'رشد شبکه شما',
+    you: 'شما',
+    level1Short: 'سطح 1',
+    level2Short: 'سطح 2',
+    level3Short: 'سطح 3',
+    disclaimerTitle: 'سلب مسئولیت قانونی مهم',
+    disclaimer1: 'این مشاوره مالی نیست. SOLDIA یک پلتفرم شبکه ارجاع است و یک محصول سرمایه‌گذاری، خدمات مالی یا طرح سرمایه‌گذاری نیست. هیچ سودی تضمین نشده است.',
+    disclaimer2: 'مشارکت داوطلبانه. همه شرکت‌کنندگان به صورت داوطلبانه و با ریسک خود شرکت می‌کنند. هر درآمدی کاملاً به رشد شبکه و عملکرد فردی بستگی دارد.',
+    disclaimer3: 'بدون تضمین. عملکرد گذشته، پیش‌بینی‌ها یا محاسبات نمایش داده شده نتایج آینده را تضمین نمی‌کند. درآمد واقعی ممکن است به طور قابل توجهی متفاوت باشد یا صفر باشد.',
+    disclaimer4: 'مسئولیت شخصی. با شرکت، شما تأیید می‌کنید که این شرایط را خوانده و درک کرده‌اید و مسئولیت کامل تصمیمات و اقدامات خود را می‌پذیرید.',
+    footerRights: 'تمامی حقوق محفوظ است.',
+    footerBlockchain: 'قدرت گرفته از بلاکچین سولانا',
+                rulesTitle: '🎮 SOLDIA چگونه کار می‌کند؟',
+                rulesSubtitle: 'SOLDIA یک بازی ارجاع در بلاکچین Solana است که درآمد شما به فعالیت تیمتان بستگی دارد.',
+                rulesStep1Title: 'مرحله 1: سطح را انتخاب کنید',
+                rulesStep1Content: 'یکی از 4 سطح مشارکت را خریداری کنید:',
+                rulesStep2Title: 'مرحله 2: لینک ارجاع دریافت کنید',
+                rulesStep2Content: 'پس از فعال‌سازی، یک لینک ارجاع منحصر به فرد برای دعوت شرکت‌کنندگان دریافت می‌کنید.',
+                rulesStep3Title: 'مرحله 3: دعوت کنید و کسب درآمد کنید',
+                rulesStep3Content: 'از خریدهای تیم خود از طریق سیستم 3 سطحی پاداش دریافت کنید:',
+                rulesLevel1Label: 'سطح 1',
+                rulesLevel1Text: '(دعوت‌های مستقیم شما) — ',
+                rulesLevel1Suffix: ' از مبلغ خرید',
+                rulesLevel2Label: 'سطح 2',
+                rulesLevel2Text: '(دعوت‌های ارجاعات شما) — ',
+                rulesLevel2Suffix: ' از مبلغ خرید',
+                rulesLevel3Label: 'سطح 3',
+                rulesLevel3Text: '(دعوت‌های ارجاعات سطح 2) — ',
+                rulesLevel3Suffix: ' از مبلغ خرید',
+                rulesStep4Title: 'مرحله 4: برداشت وجوه',
+                rulesWithdrawal1: 'برداشت پس از جمع‌آوری <strong>x2</strong> سپرده شما امکان‌پذیر است',
+                rulesWithdrawal2: 'حداقل مبلغ برداشت: <strong>$10 USDC</strong>',
+                rulesWithdrawal3: 'پرداخت‌ها به صورت <strong>USDC</strong> به کیف پول Solana شما انجام می‌شود',
+                rulesWithdrawal4: 'پردازش از چند دقیقه تا 24 ساعت طول می‌کشد',
+}
+
+        ,
+            ja: {
+                selectWallet: 'ウォレットを選択',
+                cancelButton: 'キャンセル',
+                connectWallet: 'ウォレット接続',
+                badge: '⚡ 指数関数的成長プラットフォーム',
+                heroLine1: 'あなたの',
+                heroLine2: 'ダイヤモンド帝国を構築',
+                heroSubtitle: '幾何学的進行の力を活用します。',
+                bronze: 'トパーズ',
+                silver: 'オパール',
+                gold: 'サファイア',
+                diamond: 'ダイヤモンド',
+                bronzeDesc: 'エントリーレベル投資',
+                silverDesc: '最適層',
+                goldDesc: '高度な投資',
+                diamondDesc: 'エリート層',
+                calcTitle: '成長計算機',
+                calcSubtitle: '指数関数的収益を計算',
+                selectTier: 'ティアを選択',
+                youInvite: 'あなたが招待',
+                eachInvites: '各自が招待',
+                level1: 'レベル1',
+                level2: 'レベル2',
+                level3: 'レベル3',
+                totalEarnings: 'ネットワーク総収益',
+                networkGrowth: 'ネットワーク成長',
+                you: 'あなた',
+                level1Short: 'レベル1',
+                level2Short: 'レベル2',
+                level3Short: 'レベル3',
+                disclaimerTitle: '重要な法的免責事項',
+                disclaimer1: 'これは財務アドバイスではありません。',
+                disclaimer2: '自発的参与。',
+                disclaimer3: '保証なし。',
+                disclaimer4: '個人の責任。',
+                footerRights: '全著作権所有。',
+                footerBlockchain: 'Solanaブロックチェーンを搭載',
+                rulesTitle: '🎮 SOLDIAの仕組み',
+                rulesSubtitle: 'SOLDIAはSolanaブロックチェーン上の紹介ゲームです。',
+                rulesStep1Title: 'ステップ1: レベルを選択',
+                rulesStep1Content: '4つの参加レベルから選択:',
+                rulesStep2Title: 'ステップ2: 紹介リンクを取得',
+                rulesStep2Content: 'アクティベーション後、紹介リンクを受け取ります。',
+                rulesStep3Title: 'ステップ3: 招待して稼ぐ',
+                rulesStep3Content: '3レベルシステムでボーナスを獲得:',
+                rulesLevel1Label: 'レベル1',
+                rulesLevel1Text: '(直接招待) — ',
+                rulesLevel1Suffix: ' 購入額の',
+                rulesLevel2Label: 'レベル2',
+                rulesLevel2Text: '(紹介者の招待) — ',
+                rulesLevel2Suffix: ' 購入額の',
+                rulesLevel3Label: 'レベル3',
+                rulesLevel3Text: '(レベル2紹介) — ',
+                rulesLevel3Suffix: ' 購入額の',
+                rulesStep4Title: 'ステップ4: 出金',
+                rulesWithdrawal1: '<strong>x2</strong>後に出金可能',
+                rulesWithdrawal2: '最小: <strong>$10 USDC</strong>',
+                rulesWithdrawal3: '<strong>USDC</strong>で支払い',
+                rulesWithdrawal4: '処理: 数分〜24時間'
+            }
+        };
+        
+        let currentLang = 'en';
+        let currentTier = 149;
+        
+        function toggleLanguage() {
+            document.getElementById('lang-dropdown').classList.toggle('active');
+        }
+        
+        // ============ ОБНОВЛЕННАЯ ФУНКЦИЯ: Локализация ВСЕХ элементов ============
+        function updateAllTranslations(lang) {
+            const t = translations[lang];
+            if (!t) return;
+            
+            // 1. Обновить элементы с data-translate (основной контент)
+            document.querySelectorAll('[data-translate]').forEach(elem => {
+                const key = elem.getAttribute('data-translate');
+                if (t[key]) {
+                    elem.innerHTML = t[key];
+                }
+            });
+            
+            // 2. НОВОЕ: Обновить элементы с data-i18n (описания кошельков)
+            document.querySelectorAll('[data-i18n]').forEach(elem => {
+                const key = elem.getAttribute('data-i18n');
+                if (t[key]) {
+                    elem.textContent = t[key];
+                }
+            });
+            
+            // 3. Обновить калькулятор (чтобы "friends" обновлялся)
+            calculate();
+        }
+        
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('current-lang').textContent = lang.toUpperCase();
+            document.getElementById('lang-dropdown').classList.remove('active');
+            
+            // Используем новую функцию для обновления всех переводов
+            updateAllTranslations(lang);
+        }
+        
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.language-selector')) {
+                document.getElementById('lang-dropdown').classList.remove('active');
+            }
+        });
+        
+        function selectTier(element, amount, type) {
+            document.querySelectorAll('.tier-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+        
+        function selectCalcTier(element, amount) {
+            document.querySelectorAll('.calc-tier-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            element.classList.add('active');
+            currentTier = amount;
+            calculate();
+        }
+        
+        function calculate() {
+            const youInvite = parseInt(document.querySelectorAll('.slider')[0].value);
+            const eachInvites = parseInt(document.querySelectorAll('.slider')[1].value);
+            
+            // ГЕОМЕТРИЧЕСКАЯ ПРОГРЕССИЯ
+            const l1 = youInvite;
+            const l2 = l1 * eachInvites;
+            const l3 = l2 * eachInvites;
+            
+            const l1_earn = l1 * currentTier * 0.30;
+            const l2_earn = l2 * currentTier * 0.20;
+            const l3_earn = l3 * currentTier * 0.10;
+            const total = l1_earn + l2_earn + l3_earn;
+            
+            const roi = ((total / currentTier) * 100).toFixed(0);
+            
+            document.getElementById('you-invite').textContent = youInvite;
+            document.getElementById('each-invites').textContent = eachInvites;
+            
+            document.getElementById('l1-count').textContent = l1 + ' ' + (translations[currentLang]?.people || 'people');
+            document.getElementById('l2-count').textContent = l2 + ' ' + (translations[currentLang]?.people || 'people');
+            document.getElementById('l3-count').textContent = l3 + ' ' + (translations[currentLang]?.people || 'people');
+            
+            document.getElementById('l1-earn').textContent = '$' + Math.round(l1_earn).toLocaleString();
+            document.getElementById('l2-earn').textContent = '$' + Math.round(l2_earn).toLocaleString();
+            document.getElementById('l3-earn').textContent = '$' + Math.round(l3_earn).toLocaleString();
+            
+            document.getElementById('total-earn').textContent = '$' + Math.round(total).toLocaleString();
+            document.getElementById('roi').textContent = parseInt(roi).toLocaleString();
+            
+            document.getElementById('visual-l1').textContent = l1;
+            document.getElementById('visual-l2').textContent = l2;
+            document.getElementById('visual-l3').textContent = l3;
+        }
+        
+        calculate();
+        
+        // ==================== SOLDIA WALLET INTEGRATION ====================
+        // Configuration - CHANGE THESE VALUES!
+        const SOLDIA_CONFIG = {
+            API_URL: window.location.origin,
+            MAIN_WALLET_TOKEN: 'YOUR_USDC_TOKEN_ACCOUNT_HERE', // ← ВАЖНО!
+            USDC_MINT: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+            RPC: 'https://api.mainnet-beta.solana.com'
+        };
+        
+        // State
+        let soldiaWallet = null;
+        let soldiaConnection = null;
+        let soldiaUserAddress = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            soldiaConnection = new solanaWeb3.Connection(SOLDIA_CONFIG.RPC, 'confirmed');
+            
+            // Check for referral code
+            const urlParams = new URLSearchParams(window.location.search);
+            const refCode = urlParams.get('ref');
+            if (refCode) {
+                localStorage.setItem('soldiaReferral', refCode);
+            }
+            
+            console.log('✅ SOLDIA Wallet System Ready');
+        });
+        
+        // Wallet Modal Functions
+        function showSoldiaWalletModal() {
+            document.getElementById('soldiaWalletModal').style.display = 'flex';
+        }
+        
+        function closeSoldiaWalletModal() {
+            document.getElementById('soldiaWalletModal').style.display = 'none';
+        }
+        
+        // Connect Phantom
+        async function connectSoldiaPhantom() {
+            try {
+                if (!window.solana || !window.solana.isPhantom) {
+                    window.open('https://phantom.app/', '_blank');
+                    alert('Please install Phantom wallet first!');
+                    return;
+                }
+                
+                const response = await window.solana.connect();
+                soldiaWallet = window.solana;
+                await onSoldiaWalletConnected(response.publicKey.toString());
+            } catch (error) {
+                console.error('Phantom connection failed:', error);
+                alert('Failed to connect Phantom wallet');
+            }
+        }
+        
+        // Connect Solflare
+        async function connectSoldiaSolflare() {
+            try {
+                if (!window.solflare) {
+                    window.open('https://solflare.com/', '_blank');
+                    alert('Please install Solflare wallet first!');
+                    return;
+                }
+                
+                await window.solflare.connect();
+                soldiaWallet = window.solflare;
+                await onSoldiaWalletConnected(window.solflare.publicKey.toString());
+            } catch (error) {
+                console.error('Solflare connection failed:', error);
+                alert('Failed to connect Solflare wallet');
+            }
+        }
+        
+        // Connect Backpack
+        async function connectSoldiaBackpack() {
+            try {
+                if (!window.backpack) {
+                    window.open('https://backpack.app/', '_blank');
+                    alert('Please install Backpack wallet first!');
+                    return;
+                }
+                
+                const response = await window.backpack.connect();
+                soldiaWallet = window.backpack;
+                await onSoldiaWalletConnected(response.publicKey.toString());
+            } catch (error) {
+                console.error('Backpack connection failed:', error);
+                alert('Failed to connect Backpack wallet');
+            }
+        }
+        
+        // Connect Coinbase
+        async function connectSoldiaCoinbase() {
+            try {
+                if (!window.coinbaseSolana) {
+                    window.open('https://www.coinbase.com/wallet', '_blank');
+                    alert('Please install Coinbase Wallet first!');
+                    return;
+                }
+                
+                const response = await window.coinbaseSolana.connect();
+                soldiaWallet = window.coinbaseSolana;
+                await onSoldiaWalletConnected(response.publicKey.toString());
+            } catch (error) {
+                console.error('Coinbase connection failed:', error);
+                alert('Failed to connect Coinbase Wallet');
+            }
+        }
+        
+        // Connect Trust
+        async function connectSoldiaTrust() {
+            try {
+                if (!window.trustwallet || !window.trustwallet.solana) {
+                    window.open('https://trustwallet.com/', '_blank');
+                    alert('Please install Trust Wallet first!');
+                    return;
+                }
+                
+                await window.trustwallet.solana.connect();
+                soldiaWallet = window.trustwallet.solana;
+                await onSoldiaWalletConnected(window.trustwallet.solana.publicKey.toString());
+            } catch (error) {
+                console.error('Trust Wallet connection failed:', error);
+                alert('Failed to connect Trust Wallet');
+            }
+        }
+        
+        // Connect Glow
+        async function connectSoldiaGlow() {
+            try {
+                if (!window.glow) {
+                    window.open('https://glow.app/', '_blank');
+                    alert('Please install Glow wallet first!');
+                    return;
+                }
+                
+                const resp = await window.glow.connect();
+                soldiaWallet = window.glow;
+                await onSoldiaWalletConnected(resp.publicKey.toString());
+            } catch (error) {
+                console.error('Glow connection failed:', error);
+                alert('Failed to connect Glow wallet');
+            }
+        }
+        
+        // Connect Slope
+        async function connectSoldiaSlope() {
+            try {
+                if (!window.Slope) {
+                    window.open('https://slope.finance/', '_blank');
+                    alert('Please install Slope wallet first!');
+                    return;
+                }
+                
+                const resp = await window.Slope.connect();
+                soldiaWallet = window.Slope;
+                await onSoldiaWalletConnected(resp.publicKey);
+            } catch (error) {
+                console.error('Slope connection failed:', error);
+                alert('Failed to connect Slope wallet');
+            }
+        }
+        
+        // Connect Sollet
+        async function connectSoldiaSollet() {
+            try {
+                if (!window.sollet) {
+                    window.open('https://www.sollet.io/', '_blank');
+                    alert('Please install Sollet wallet first!');
+                    return;
+                }
+                
+                await window.sollet.connect();
+                soldiaWallet = window.sollet;
+                await onSoldiaWalletConnected(window.sollet.publicKey.toString());
+            } catch (error) {
+                console.error('Sollet connection failed:', error);
+                alert('Failed to connect Sollet wallet');
+            }
+        }
+        
+        // Connect Coin98
+        async function connectSoldiaCoin98() {
+            try {
+                if (!window.coin98 || !window.coin98.sol) {
+                    window.open('https://coin98.com/', '_blank');
+                    alert('Please install Coin98 wallet first!');
+                    return;
+                }
+                
+                const resp = await window.coin98.sol.connect();
+                soldiaWallet = window.coin98.sol;
+                await onSoldiaWalletConnected(resp.publicKey.toString());
+            } catch (error) {
+                console.error('Coin98 connection failed:', error);
+                alert('Failed to connect Coin98 wallet');
+            }
+        }
+        
+        // Connect Exodus
+        async function connectSoldiaExodus() {
+            try {
+                if (!window.exodus || !window.exodus.solana) {
+                    window.open('https://www.exodus.com/', '_blank');
+                    alert('Please install Exodus wallet first!');
+                    return;
+                }
+                
+                const resp = await window.exodus.solana.connect();
+                soldiaWallet = window.exodus.solana;
+                await onSoldiaWalletConnected(resp.publicKey.toString());
+            } catch (error) {
+                console.error('Exodus connection failed:', error);
+                alert('Failed to connect Exodus wallet');
+            }
+        }
+        
+        // After wallet connected
+        async function onSoldiaWalletConnected(address) {
+            closeSoldiaWalletModal();
+            soldiaUserAddress = address;
+            
+            // Update connect button
+            const connectBtn = document.querySelector('.connect-wallet');
+            if (connectBtn) {
+                connectBtn.textContent = address.slice(0, 4) + '...' + address.slice(-4);
+                connectBtn.style.background = 'linear-gradient(135deg, #00FF00, #00AA00)';
+                connectBtn.onclick = null; // Remove click handler
+            }
+            
+            console.log('✅ Wallet connected:', address);
+            
+            // Register user on backend
+            await registerSoldiaUser(address);
+            
+            // Load user stats
+            await loadSoldiaStats(address);
+        }
+        
+        // Register user
+        async function registerSoldiaUser(address) {
+            try {
+                const referralCode = localStorage.getItem('soldiaReferral');
+                
+                const response = await fetch(SOLDIA_CONFIG.API_URL + '/api/users/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        wallet_address: address,
+                        referral_code: referralCode
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.referral_code) {
+                    const refLink = window.location.origin + window.location.pathname + '?ref=' + data.referral_code;
+                    console.log('🔗 Your referral link:', refLink);
+                    
+                    // You can display this in UI
+                    // alert('Your referral link: ' + refLink);
+                }
+                
+                console.log('✅ User registered');
+            } catch (error) {
+                console.error('Registration error:', error);
+            }
+        }
+        
+        // Load stats
+        async function loadSoldiaStats(address) {
+            try {
+                const response = await fetch(SOLDIA_CONFIG.API_URL + '/api/users/stats/' + address);
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ Stats loaded:', data.user);
+                    // Load Dashboard with stats
+                    currentWalletAddress = address;
+                    loadDashboardData(address, false);
+                }
+            } catch (error) {
+                console.error('Stats loading error:', error);
+            }
+        }
+        
+        // CRITICAL FIX: PROPER USDC DEPOSIT FUNCTION
+        async function depositSoldiaUSDC(level) {
+            if (!soldiaWallet || !soldiaUserAddress) {
+                alert(translations[currentLang].connectWalletFirst || 'Please connect wallet first!');
+                return;
+            }
+            
+            const amounts = {
+                'bronze': 49,
+                'silver': 149,
+                'gold': 499,
+                'diamond': 999
+            };
+            
+            const amount = amounts[level];
+            if (!amount) {
+                alert('Invalid tier selected');
+                return;
+            }
+            
+            try {
+                alert(`Sending $${amount} USDC. Please approve in your wallet...`);
+                
+                // Create proper SPL Token transfer instruction
+                const fromPubkey = new solanaWeb3.PublicKey(soldiaUserAddress);
+                const toPubkey = new solanaWeb3.PublicKey(SOLDIA_CONFIG.MAIN_WALLET_TOKEN);
+                const usdcMint = new solanaWeb3.PublicKey(SOLDIA_CONFIG.USDC_MINT);
+                const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+                
+                // Get associated token accounts
+                const fromTokenAccount = await getAssociatedTokenAddress(fromPubkey, usdcMint);
+                
+                // USDC has 6 decimals
+                const amountInLamports = amount * 1_000_000;
+                
+                // Create transfer instruction (proper SPL Token transfer)
+                const keys = [
+                    {pubkey: fromTokenAccount, isSigner: false, isWritable: true},
+                    {pubkey: usdcMint, isSigner: false, isWritable: false},
+                    {pubkey: toPubkey, isSigner: false, isWritable: true},
+                    {pubkey: fromPubkey, isSigner: true, isWritable: false}
+                ];
+                
+                // TransferChecked instruction (instruction index 12)
+                const dataLayout = {
+                    encode: function(obj) {
+                        const buffer = Buffer.alloc(17);
+                        buffer.writeUInt8(12, 0); // TransferChecked instruction
+                        buffer.writeBigUInt64LE(BigInt(obj.amount), 1);
+                        buffer.writeUInt8(obj.decimals, 9);
+                        return buffer;
+                    }
+                };
+                
+                const data = dataLayout.encode({
+                    amount: amountInLamports,
+                    decimals: 6
+                });
+                
+                const transferIx = new solanaWeb3.TransactionInstruction({
+                    keys: keys,
+                    programId: TOKEN_PROGRAM_ID,
+                    data: data
+                });
+                
+                // Build transaction
+                const transaction = new solanaWeb3.Transaction().add(transferIx);
+                const {blockhash} = await soldiaConnection.getLatestBlockhash();
+                transaction.recentBlockhash = blockhash;
+                transaction.feePayer = fromPubkey;
+                
+                // Sign and send
+                const signed = await soldiaWallet.signTransaction(transaction);
+                const signature = await soldiaConnection.sendRawTransaction(signed.serialize());
+                
+                console.log('📤 Transaction sent:', signature);
+                alert('Transaction sent! Waiting for confirmation...');
+                
+                // Wait for confirmation
+                await soldiaConnection.confirmTransaction(signature, 'confirmed');
+                
+                console.log('✅ Transaction confirmed!');
+                
+                // Verify on backend — передаём tx_hash (signature) и amount в USDC
+                await verifySoldiaDeposit(soldiaUserAddress, signature, amount);
+                
+                alert('✅ Deposit successful! Your earnings will start accumulating.');
+                
+                // Reload stats
+                await loadSoldiaStats(soldiaUserAddress);
+                
+            } catch (error) {
+                console.error('Deposit error:', error);
+                alert('Deposit failed: ' + error.message);
+            }
+        }
+        
+        // Helper: Get Associated Token Address
+        async function getAssociatedTokenAddress(owner, mint) {
+            const ASSOCIATED_TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+            const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+            
+            const [address] = await solanaWeb3.PublicKey.findProgramAddress(
+                [
+                    owner.toBuffer(),
+                    TOKEN_PROGRAM_ID.toBuffer(),
+                    mint.toBuffer()
+                ],
+                ASSOCIATED_TOKEN_PROGRAM_ID
+            );
+            
+            return address;
+        }
+        
+        // Verify deposit on backend
+        async function verifySoldiaDeposit(address, tx_hash, amount) {
+            const response = await fetch(SOLDIA_CONFIG.API_URL + '/api/deposits/verify', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    wallet_address: address,
+                    tx_hash: tx_hash,
+                    amount: amount
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.message || 'Verification failed');
+            }
+            
+            console.log('✅ Deposit verified on backend');
+            return data;
+        }
+        
+        // Withdrawal function
+        async function withdrawSoldiaFunds(amount) {
+            if (!soldiaWallet || !soldiaUserAddress) {
+                alert('Please connect wallet first!');
+                return;
+            }
+            
+            if (!amount || amount < 10) {
+                alert('Please enter amount ≥ $10');
+                return;
+            }
+            
+            try {
+                if (!window.signatureManager) {
+                    throw new Error('Signature manager not initialized. Please refresh the page.');
+                }
+                const signatureData = await window.signatureManager.signWithdrawalRequest(amount, soldiaUserAddress);
+                const idempotencyKey = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+
+                const response = await fetch(SOLDIA_CONFIG.API_URL + '/api/withdrawals/withdraw', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        wallet_address: soldiaUserAddress,
+                        amount: amount.toString(),
+                        signature: signatureData.signature,
+                        idempotency_key: idempotencyKey
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ Withdrawal successful!
+Amount: $${data.amount}
+Transaction: ${data.signature}`);
+                    
+                    // Reload stats
+                    await loadSoldiaStats(soldiaUserAddress);
+                } else {
+                    alert('Withdrawal failed: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Withdrawal error:', error);
+                alert('Withdrawal failed: ' + error.message);
+            }
+        }
+        
+        // Update Connect Wallet button to show modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const connectBtn = document.querySelector('.connect-wallet');
+            if (connectBtn) {
+                connectBtn.addEventListener('click', showSoldiaWalletModal);
+            }
+        });
+        
+        console.log('💎 SOLDIA Complete - Ready!');
+        
+        // ==================== SUBTLE PARTICLE WAVES BACKGROUND ====================
+        (function() {
+            const container = document.getElementById('wave3d');
+            
+            // Scene setup
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ 
+                alpha: true, 
+                antialias: true 
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+            
+            // Camera far back for background effect
+            camera.position.set(0, 8, 18);
+            camera.lookAt(0, 0, 0);
+            
+            const particleSystems = [];
+            
+            // Create subtle particle layers
+            const createParticleWave = (zOffset, density, colorHex, opacity) => {
+                const geometry = new THREE.BufferGeometry();
+                const particles = density;
+                const positions = new Float32Array(particles * 3);
+                const colors = new Float32Array(particles * 3);
+                
+                for (let i = 0; i < particles; i++) {
+                    const i3 = i * 3;
+                    positions[i3] = (Math.random() - 0.5) * 50;     // x - wider spread
+                    positions[i3 + 1] = (Math.random() - 0.5) * 30; // y
+                    positions[i3 + 2] = (Math.random() - 0.5) * 25 + zOffset; // z
+                    
+                    const color = new THREE.Color(colorHex);
+                    colors[i3] = color.r * 0.6;     // Приглушенные цвета
+                    colors[i3 + 1] = color.g * 0.6;
+                    colors[i3 + 2] = color.b * 0.6;
+                }
+                
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+                
+                const material = new THREE.PointsMaterial({
+                    size: 0.12,              // Меньший размер
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: opacity,         // ОЧЕНЬ низкая прозрачность
+                    blending: THREE.NormalBlending, // Обычное смешивание вместо additive
+                    sizeAttenuation: true
+                });
+                
+                const pointsMesh = new THREE.Points(geometry, material);
+                return { mesh: pointsMesh, positions: positions, material: material };
+            };
+            
+            // 3 слоя частиц - ОЧЕНЬ тонкие
+            particleSystems.push(createParticleWave(0, 6000, 0x4DB8CC, 0.08));    // Приглушенный cyan
+            particleSystems.push(createParticleWave(-5, 5000, 0x8A52B3, 0.05));   // Приглушенный purple
+            particleSystems.push(createParticleWave(-10, 4000, 0xB36699, 0.03));  // Приглушенный pink
+            
+            particleSystems.forEach(ps => scene.add(ps.mesh));
+            
+            // Тонкая волна на заднем плане
+            const waveGeometry = new THREE.PlaneGeometry(55, 45, 100, 100);
+            const waveMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0 },
+                    color1: { value: new THREE.Color(0x3DA8B8) }, // Приглушенные цвета
+                    color2: { value: new THREE.Color(0x7A3FA3) },
+                    color3: { value: new THREE.Color(0xA34D7D) }
+                },
+                vertexShader: `
+                    uniform float time;
+                    varying vec2 vUv;
+                    varying float vElevation;
+                    
+                    void main() {
+                        vUv = uv;
+                        vec3 pos = position;
+                        
+                        // Плавные медленные волны
+                        float wave1 = sin(pos.x * 0.3 + time * 1.0) * 0.7;
+                        float wave2 = sin(pos.y * 0.25 + time * 1.2) * 0.6;
+                        float wave3 = cos(pos.x * 0.2 + pos.y * 0.2 + time * 0.9) * 0.8;
+                        
+                        pos.z = (wave1 + wave2 + wave3) * 0.4;
+                        vElevation = pos.z;
+                        
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform float time;
+                    uniform vec3 color1;
+                    uniform vec3 color2;
+                    uniform vec3 color3;
+                    varying vec2 vUv;
+                    varying float vElevation;
+                    
+                    void main() {
+                        // Очень плавные переходы
+                        float colorMix1 = sin(time * 0.3 + vElevation) * 0.5 + 0.5;
+                        float colorMix2 = cos(time * 0.25 + vUv.x * 1.5) * 0.5 + 0.5;
+                        
+                        vec3 color = mix(color1, color2, colorMix1);
+                        color = mix(color, color3, colorMix2 * 0.4);
+                        
+                        // Приглушенная яркость
+                        float brightness = vElevation * 0.15 + 0.7;
+                        color *= brightness;
+                        
+                        gl_FragColor = vec4(color, 0.06); // ОЧЕНЬ прозрачная
+                    }
+                `,
+                transparent: true,
+                side: THREE.DoubleSide,
+                wireframe: false
+            });
+            
+            const waveMesh = new THREE.Mesh(waveGeometry, waveMaterial);
+            waveMesh.rotation.x = -Math.PI / 2.6;
+            waveMesh.position.z = -2;
+            scene.add(waveMesh);
+            
+            // Едва заметный wireframe
+            const wireframeGeo = new THREE.PlaneGeometry(55, 45, 60, 60);
+            const wireframeMat = new THREE.MeshBasicMaterial({
+                color: 0x4DB8CC,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.02  // Почти невидимый
+            });
+            const wireframeMesh = new THREE.Mesh(wireframeGeo, wireframeMat);
+            wireframeMesh.rotation.x = -Math.PI / 2.6;
+            wireframeMesh.position.z = -1.9;
+            scene.add(wireframeMesh);
+            
+            // Медленная анимация
+            let time = 0;
+            function animate() {
+                requestAnimationFrame(animate);
+                time += 0.018;  // Немного медленнее
+                
+                // Обновить волну
+                waveMaterial.uniforms.time.value = time;
+                waveMesh.rotation.z = Math.sin(time * 0.12) * 0.04;
+                wireframeMesh.rotation.z = waveMesh.rotation.z;
+                
+                // Анимация частиц
+                particleSystems.forEach((ps, idx) => {
+                    const positions = ps.positions;
+                    const geometry = ps.mesh.geometry;
+                    
+                    for (let i = 0; i < positions.length; i += 3) {
+                        const x = positions[i];
+                        const y = positions[i + 1];
+                        
+                        // Плавное волновое движение
+                        const wave = Math.sin(x * 0.15 + time * (1.0 + idx * 0.2)) * 
+                                    Math.cos(y * 0.12 + time * (0.9 + idx * 0.3)) * 2.5;
+                        
+                        positions[i + 2] = wave - idx * 5;
+                        
+                        // Очень медленный дрейф
+                        positions[i] += Math.sin(time * 0.3 + i) * 0.008;
+                        positions[i + 1] += Math.cos(time * 0.25 + i) * 0.008;
+                        
+                        // Wrap
+                        if (positions[i] > 25) positions[i] = -25;
+                        if (positions[i] < -25) positions[i] = 25;
+                        if (positions[i + 1] > 15) positions[i + 1] = -15;
+                        if (positions[i + 1] < -15) positions[i + 1] = 15;
+                    }
+                    
+                    geometry.attributes.position.needsUpdate = true;
+                    ps.mesh.rotation.z += 0.0001 * (idx + 1);
+                });
+                
+                // Очень медленная смена цветов (приглушенные)
+                const hue1 = (time * 0.03) % 1;
+                const hue2 = (time * 0.025 + 0.33) % 1;
+                const hue3 = (time * 0.035 + 0.66) % 1;
+                
+                // Приглушенные цвета (saturation 0.4, lightness 0.45)
+                waveMaterial.uniforms.color1.value.setHSL(hue1, 0.4, 0.45);
+                waveMaterial.uniforms.color2.value.setHSL(hue2, 0.4, 0.47);
+                waveMaterial.uniforms.color3.value.setHSL(hue3, 0.4, 0.46);
+                
+                // Едва заметное движение камеры
+                camera.position.y = 8 + Math.sin(time * 0.15) * 0.2;
+                camera.lookAt(0, 0, 0);
+                
+                renderer.render(scene, camera);
+            }
+            
+            // Responsive
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            
+            animate();
+            
+            console.log('✨ Subtle Particle Background Loaded');
+        })();
+    </script>
+    
+    <!-- Wallet Selection Modal -->
+    <div id="soldiaWalletModal" onclick="closeSoldiaWalletModal()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 99999; align-items: center; justify-content: center;">
+        <div onclick="event.stopPropagation()" style="background: #0A0A0F; border: 2px solid var(--neon-cyan); border-radius: 20px; padding: 30px; max-width: 500px; width: 90%; max-height: 85vh; display: flex; flex-direction: column;">
+            <h2 style="font-family: 'Orbitron'; color: var(--neon-cyan); margin-bottom: 20px; text-align: center; flex-shrink: 0;" data-translate="selectWallet">Select Wallet</h2>
+            
+            <!-- Scrollable container for wallets -->
+            <div style="overflow-y: auto; overflow-x: hidden; max-height: calc(85vh - 150px); padding-right: 10px; margin-bottom: 20px;">
+                <!-- Scrollbar styling -->
+                <style>
+                    #soldiaWalletModal div::-webkit-scrollbar {
+                        width: 8px;
+                    }
+                    #soldiaWalletModal div::-webkit-scrollbar-track {
+                        background: rgba(255,255,255,0.05);
+                        border-radius: 10px;
+                    }
+                    #soldiaWalletModal div::-webkit-scrollbar-thumb {
+                        background: var(--neon-cyan);
+                        border-radius: 10px;
+                    }
+                    #soldiaWalletModal div::-webkit-scrollbar-thumb:hover {
+                        background: var(--neon-purple);
+                    }
+                </style>
+            
+                <div onclick="connectSoldiaPhantom()" style="display: flex; align-items: center; gap: 15px; padding: 12px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--neon-cyan); border-radius: 10px; margin: 8px 0; cursor: pointer; transition: all 0.3s;">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQou4F2T4xkMiMB_2EYO3actRysO7oUO-RHMg&s" style="width: 35px; height: 35px; border-radius: 50%; flex-shrink: 0;">
+                    <div style="flex: 1; min-width: 0;">
+                        <strong style="display: block; font-size: 14px;">Phantom</strong>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" data-i18n="walletPhantomDesc">Most popular Solana wallet</div>
+                    </div>
+                </div>
+                
+                <div onclick="connectSoldiaSolflare()" style="display: flex; align-items: center; gap: 15px; padding: 12px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--neon-cyan); border-radius: 10px; margin: 8px 0; cursor: pointer; transition: all 0.3s;">
+                    <img src="https://j3iwthfga6ygv5xaoezhlotpj43x56rea4gu6vjhbe4wuzwg3wva.arweave.net/TtFpnKYHsGr24HEydbpvTzd--iQHDU9VJwk5ambG3ao?ext=jpg&dt=d.png" style="width: 35px; height: 35px; border-radius: 50%; flex-shrink: 0;">
+                    <div style="flex: 1; min-width: 0;">
+                        <strong style="display: block; font-size: 14px;">Solflare</strong>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5);" data-i18n="walletSolflareDesc">Secure & reliable</div>
+                    </div>
+                </div>
+                
+                <div onclick="connectSoldiaBackpack()" style="display: flex; align-items: center; gap: 15px; padding: 12px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--neon-cyan); border-radius: 10px; margin: 8px 0; cursor: pointer; transition: all 0.3s;">
+                    <img src="https://cdn.prod.website-files.com/66e480f0e9eccea9c231ce92/6839e3bc01620952b0aff662_Backpack-logo.png" style="width: 35px; height: 35px; border-radius: 50%; flex-shrink: 0;">
+                    <div style="flex: 1; min-width: 0;">
+                        <strong style="display: block; font-size: 14px;">Backpack</strong>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5);" data-i18n="walletBackpackDesc">Modern wallet experience</div>
+                    </div>
+                </div>
+                
+                <div onclick="connectSoldiaCoinbase()" style="display: flex; align-items: center; gap: 15px; padding: 12px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--neon-cyan); border-radius: 10px; margin: 8px 0; cursor: pointer; transition: all 0.3s;">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8UV6hbuwR4IQB1OfRBEkFuwlogOxdnba49Q&s" style="width: 35px; height: 35px; border-radius: 50%; flex-shrink: 0;">
+                    <div style="flex: 1; min-width: 0;">
+                        <strong style="display: block; font-size: 14px;">Coinbase Wallet</strong>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5);" data-i18n="walletCoinbaseDesc">Trusted platform</div>
+                    </div>
+                </div>
+                
+                <div onclick="connectSoldiaTrust()" style="display: flex; align-items: center; gap: 15px; padding: 12px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--neon-cyan); border-radius: 10px; margin: 8px 0; cursor: pointer; transition: all 0.3s;">
+                    <img src="https://avatars.githubusercontent.com/u/32179889?s=200&v=4" style="width: 35px; height: 35px; border-radius: 50%; flex-shrink: 0;">
+                    <div style="flex: 1; min-width: 0;">
+                        <strong style="display: block; font-size: 14px;">Trust Wallet</strong>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5);" data-i18n="walletTrustDesc">Mobile friendly</div>
+                    </div>
+                </div>
+                
+                <div onclick="connectSoldiaGlow()" style="display: flex; align-items: center; gap: 15px; padding: 12px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--neon-cyan); border-radius: 10px; margin: 8px 0; cursor: pointer; transition: all 0.3s;">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3QD4goO_R84VlzHp8knnsfy-C9orfYxoFPQ&s" style="width: 35px; height: 35px; border-radius: 50%; flex-shrink: 0;">
+                    <div style="flex: 1; min-width: 0;">
+                        <strong style="display: block; font-size: 14px;">Glow</strong>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5);" data-i18n="walletGlowDesc">Security focused</div>
+                    </div>
+                </div>
+                
+                <div onclick="connectSoldiaSlope()" style="display: flex; align-items: center; gap: 15px; padding: 12px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--neon-cyan); border-radius: 10px; margin: 8px 0; cursor: pointer; transition: all 0.3s;">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTp1V2hPYOj1WRRFs8IkuN0NQP2g0JiNZtdVw&s" style="width: 35px; height: 35px; border-radius: 50%; flex-shrink: 0;">
+                    <div style="flex: 1; min-width: 0;">
+                        <strong style="display: block; font-size: 14px;">Slope</strong>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5);" data-i18n="walletSlopeDesc">Mobile first wallet</div>
+                    </div>
+                </div>
+                
+                <div onclick="connectSoldiaSollet()" style="display: flex; align-items: center; gap: 15px; padding: 12px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--neon-cyan); border-radius: 10px; margin: 8px 0; cursor: pointer; transition: all 0.3s;">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3oyZHuKsEnG23KZNW6U5IHbBXhRe3GaA6dg&s" style="width: 35px; height: 35px; border-radius: 50%; flex-shrink: 0;">
+                    <div style="flex: 1; min-width: 0;">
+                        <strong style="display: block; font-size: 14px;">Sollet</strong>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5);" data-i18n="walletSolletDesc">Classic web wallet</div>
+                    </div>
+                </div>
+                
+                <div onclick="connectSoldiaCoin98()" style="display: flex; align-items: center; gap: 15px; padding: 12px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--neon-cyan); border-radius: 10px; margin: 8px 0; cursor: pointer; transition: all 0.3s;">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoTmSR9tqAmWWz6_q8ow9vc_Cr6DwBj_4idw&s" style="width: 35px; height: 35px; border-radius: 50%; flex-shrink: 0;">
+                    <div style="flex: 1; min-width: 0;">
+                        <strong style="display: block; font-size: 14px;">Coin98</strong>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5);" data-i18n="walletCoin98Desc">Multi-chain DeFi</div>
+                    </div>
+                </div>
+                
+                <div onclick="connectSoldiaExodus()" style="display: flex; align-items: center; gap: 15px; padding: 12px 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--neon-cyan); border-radius: 10px; margin: 8px 0; cursor: pointer; transition: all 0.3s;">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3l8-9oXRZQk494XQI7-HdvKF4CtJKimkytA&s" style="width: 35px; height: 35px; border-radius: 50%; flex-shrink: 0;">
+                    <div style="flex: 1; min-width: 0;">
+                        <strong style="display: block; font-size: 14px;">Exodus</strong>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5);" data-i18n="walletExodusDesc">Desktop + Mobile</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="closeSoldiaWalletModal()" style="flex-shrink: 0; width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid var(--neon-pink); border-radius: 10px; color: white; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.3s;" data-translate="cancelButton">
+                Cancel
+            </button>
+        </div>
+    </div>
+    
+    <!-- Add Solana Web3.js if not already included -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js">
+        // ==================== DASHBOARD FUNCTIONS ====================
+        
+        let currentDashboardData = null;
+        let isDemoMode = false;
+        let currentWalletAddress = null;
+        
+        // Инициализировать Dashboard при загрузке страницы
+        function initDashboard() {
+            // Проверить URL параметр для демо-режима
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('demo')) {
+                loadDemoMode();
+            }
+        }
+        
+        // Загрузить DEMO MODE
+        function loadDemoMode() {
+            isDemoMode = true;
+            currentWalletAddress = 'DEMO123456789';
+            
+            // Показать индикатор демо
+            document.getElementById('demoModeIndicator').style.display = 'flex';
+            
+            // Загрузить данные
+            loadDashboardData('DEMO123456789', true);
+        }
+        
+        // Выйти из Demo Mode
+        function exitDemoMode() {
+            isDemoMode = false;
+            location.href = location.pathname;
+        }
+        
+        // Загрузить данные Dashboard
+        async function loadDashboardData(walletAddress, isDemo = false) {
+            try {
+                // Получить основную статистику
+                const statsResponse = await fetch(`/api/users/stats/${walletAddress}`);
+                const statsData = await statsResponse.json();
+                
+                if (!statsResponse.ok || !statsData) {
+                    console.error('Failed to load stats');
+                    return;
+                }
+                
+                // Получить детальную статистику
+                const detailedResponse = await fetch(`/api/users/stats/detailed/${walletAddress}`);
+                const detailedData = await detailedResponse.json();
+                
+                if (!detailedData.success) {
+                    console.warn('Failed to load detailed stats');
+                }
+                
+                currentDashboardData = {
+                    user: statsData,
+                    tiers: detailedData.tiers_breakdown || {}
+                };
+                
+                // Скрыть Hero, показать Dashboard
+                document.getElementById('hero').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                
+                // Отрендерить данные
+                renderDashboard(currentDashboardData);
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+        
+        // Отрендерить весь Dashboard
+        function renderDashboard(data) {
+            renderTierCard(data.user);
+            renderReferralLink(data.user);
+            renderReferralTable(data.user, data.tiers);
+            renderFinancialBlock(data.user);
+            setupWithdrawButton(data.user);
+            updateTranslations();
+        }
+        
+        // Отрендерить карточку уровня
+        function renderTierCard(user) {
+            const tierData = {
+                bronze: { name: 'TOPAZ', icon: '🟡', color: 'gold' },
+                silver: { name: 'OPAL', icon: '🔵', color: 'cyan' },
+                gold: { name: 'SAPPHIRE', icon: '🔷', color: 'blue' },
+                diamond: { name: 'DIAMOND', icon: '💎', color: 'white' }
+            };
+            
+            const tier = tierData[user.deposit_level] || tierData.bronze;
+            const depositAmount = formatCurrency(user.deposit_amount);
+            const depositDate = user.first_deposit_at 
+                ? new Date(user.first_deposit_at).toLocaleDateString() 
+                : '-';
+            
+            document.getElementById('tierIcon').textContent = tier.icon;
+            document.getElementById('tierName').textContent = tier.name;
+            document.getElementById('tierAmount').textContent = depositAmount;
+            document.getElementById('tierDate').textContent = depositDate;
+        }
+        
+        // Отрендерить реф. ссылку
+        function renderReferralLink(user) {
+            const referralUrl = `${window.location.origin}/?ref=${user.referral_code}`;
+            document.getElementById('referralLink').textContent = referralUrl;
+            document.getElementById('referralLink').dataset.url = referralUrl;
+        }
+        
+        // Копировать реф. ссылку
+        function copyReferralLink() {
+            const url = document.getElementById('referralLink').dataset.url;
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = document.querySelector('.copy-button');
+                const feedback = document.getElementById('copyFeedback');
+                
+                btn.classList.add('copied');
+                feedback.style.display = 'block';
+                
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    feedback.style.display = 'none';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+        
+        // Отрендерить таблицу рефералов
+        function renderReferralTable(user, tiersBreakdown) {
+            const tiers = [
+                { key: 'bronze', name: 'TOPAZ', icon: '🟡', amount: 49 },
+                { key: 'silver', name: 'OPAL', icon: '🔵', amount: 149 },
+                { key: 'gold', name: 'SAPPHIRE', icon: '🔷', amount: 499 },
+                { key: 'diamond', name: 'DIAMOND', icon: '💎', amount: 999 }
+            ];
+            
+            const tbody = document.getElementById('referralTableBody');
+            tbody.innerHTML = '';
+            
+            tiers.forEach(tier => {
+                const l1 = tiersBreakdown[tier.key]?.l1 || { count: 0, earnings: 0 };
+                const l2 = tiersBreakdown[tier.key]?.l2 || { count: 0, earnings: 0 };
+                const l3 = tiersBreakdown[tier.key]?.l3 || { count: 0, earnings: 0 };
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="tier-label">
+                            <span class="tier-icon-small">${tier.icon}</span>
+                            <div>
+                                <div class="tier-name-small">${tier.name}</div>
+                                <div class="tier-amount-small">$${tier.amount}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="level-cell">
+                            <div class="referrals-count">${l1.count} referrals</div>
+                            <div class="earnings-line">Earned: ${formatCurrency(l1.earnings)}</div>
+                            <div class="percent-line">(30%)</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="level-cell">
+                            <div class="referrals-count">${l2.count} referrals</div>
+                            <div class="earnings-line">Earned: ${formatCurrency(l2.earnings)}</div>
+                            <div class="percent-line">(20%)</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="level-cell">
+                            <div class="referrals-count">${l3.count} referrals</div>
+                            <div class="earnings-line">Earned: ${formatCurrency(l3.earnings)}</div>
+                            <div class="percent-line">(10%)</div>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Отрендерить финансовый блок
+        function renderFinancialBlock(user) {
+            const deposit = user.deposit_amount || 0;
+            const earned = user.total_earned || 0;
+            const withdrawn = user.total_withdrawn || 0;
+            const available = earned - withdrawn;
+            const minNeeded = deposit * 2;
+            const canWithdraw = earned >= minNeeded && available >= 10;
+            
+            document.getElementById('financialDeposit').textContent = formatCurrency(deposit);
+            document.getElementById('financialEarned').textContent = formatCurrency(earned);
+            document.getElementById('financialWithdrawn').textContent = formatCurrency(withdrawn);
+            document.getElementById('financialAvailable').textContent = formatCurrency(available);
+            
+            const statusEl = document.getElementById('financialStatus');
+            if (canWithdraw) {
+                statusEl.className = 'financial-status';
+                statusEl.innerHTML = '✅ Ready to withdraw!';
+            } else {
+                statusEl.className = 'financial-status warning';
+                const needed = Math.max(0, minNeeded - earned);
+                statusEl.innerHTML = `Need to earn ${formatCurrency(needed)} more`;
+            }
+        }
+        
+        // Setup кнопка вывода
+        function setupWithdrawButton(user) {
+            const button = document.getElementById('withdrawBtn');
+            const deposit = user.deposit_amount || 0;
+            const earned = user.total_earned || 0;
+            const withdrawn = user.total_withdrawn || 0;
+            const available = earned - withdrawn;
+            const minNeeded = deposit * 2;
+            const canWithdraw = earned >= minNeeded && available >= 10;
+            
+            button.disabled = !canWithdraw;
+            
+            if (canWithdraw) {
+                button.style.opacity = '1';
+                button.style.cursor = 'pointer';
+            } else {
+                button.style.opacity = '0.5';
+                button.style.cursor = 'not-allowed';
+            }
+            
+            // Сохранить доступное количество
+            button.dataset.available = available;
+        }
+        
+        // Открыть модальное окно вывода
+        function openWithdrawModal() {
+            const available = parseFloat(document.getElementById('withdrawBtn').dataset.available);
+            const modal = document.getElementById('withdrawModal');
+            
+            if (!available || available < 10) {
+                alert('Withdrawal not available yet');
+                return;
+            }
+            
+            document.getElementById('modalAvailableAmount').textContent = formatCurrency(available);
+            document.getElementById('withdrawAmount').max = available;
+            document.getElementById('withdrawAmount').value = '';
+            document.getElementById('confirmCheckbox').checked = false;
+            document.getElementById('withdrawError').textContent = '';
+            
+            modal.style.display = 'flex';
+        }
+        
+        // Закрыть модальное окно вывода
+        function closeWithdrawModal() {
+            document.getElementById('withdrawModal').style.display = 'none';
+        }
+        
+        // Валидировать сумму вывода
+        function validateWithdrawAmount() {
+            const input = document.getElementById('withdrawAmount');
+            const amount = parseFloat(input.value);
+            const available = parseFloat(document.getElementById('withdrawBtn').dataset.available);
+            const errorEl = document.getElementById('withdrawError');
+            const confirmBtn = document.getElementById('confirmWithdrawBtn');
+            const checkbox = document.getElementById('confirmCheckbox');
+            
+            let isValid = true;
+            let errorMsg = '';
+            
+            if (!amount || amount < 10) {
+                errorMsg = 'Minimum withdrawal is $10';
+                isValid = false;
+            } else if (amount > available) {
+                errorMsg = 'Amount exceeds available balance';
+                isValid = false;
+            }
+            
+            errorEl.textContent = errorMsg;
+            confirmBtn.disabled = !isValid || !checkbox.checked;
+        }
+        
+        // Обновить статус кнопки при изменении checkbox
+        document.addEventListener('change', function(e) {
+            if (e.target.id === 'confirmCheckbox') {
+                validateWithdrawAmount();
+            }
+        });
+        
+        // Отправить заявку на вывод
+        async function submitWithdrawal() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const walletAddress = currentWalletAddress;
+            const destinationWallet = document.getElementById('withdrawDestination')?.value || walletAddress;
+            
+            if (!walletAddress || !amount) {
+                alert(currentLang.alert_invalid_data || 'Invalid withdrawal data');
+                return;
+            }
+            
+            // Show loading
+            const confirmBtn = document.getElementById('confirmWithdrawBtn');
+            const originalText = confirmBtn.innerText;
+            confirmBtn.disabled = true;
+            confirmBtn.innerText = 'Signing...';
+            
+            try {
+                // ✅ SECURITY: Sign the withdrawal request with wallet
+                if (!window.signatureManager) {
+                    throw new Error('Signature manager not initialized. Please refresh the page.');
+                }
+                
+                console.log('[Withdrawal] Signing withdrawal request...');
+                // C4 FIX: Sign with walletAddress (the account owner), not destinationWallet.
+                // Backend verifies: f"Withdraw {amount:.2f} USDC to {wallet_address}"
+                // wallet_address in payload = walletAddress (current user).
+                // If we signed with destinationWallet the message would never match → 401.
+                const signatureData = await window.signatureManager.signWithdrawalRequest(amount, walletAddress);
+                console.log('[Withdrawal] ✓ Signature obtained');
+                
+                // ✅ Now send to API with signature
+                confirmBtn.innerText = 'Submitting...';
+                const withdrawIdempotencyKey = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+                
+                const response = await fetch('/api/withdrawals/withdraw', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        wallet_address: walletAddress,
+                        amount: amount.toString(),
+                        signature: signatureData.signature,
+                        idempotency_key: withdrawIdempotencyKey
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    const successMsg = currentLang.withdraw_success || 'Withdrawal request submitted successfully!';
+                    alert(successMsg);
+                    closeWithdrawModal();
+                    
+                    // Reload dashboard data
+                    if (isDemoMode) {
+                        loadDemoMode();
+                    } else {
+                        loadDashboardData(walletAddress);
+                    }
+                } else {
+                    const errorMsg = data.detail || data.message || 'Unknown error';
+                    console.error('[Withdrawal] Error:', errorMsg);
+                    alert((currentLang.error || 'Error') + ': ' + errorMsg);
+                }
+            } catch (error) {
+                console.error('[Withdrawal] Error:', error);
+                const errorMsg = error.message || 'Unknown error';
+                alert((currentLang.error || 'Error') + ': ' + errorMsg);
+            } finally {
+                // Restore button
+                confirmBtn.disabled = false;
+                confirmBtn.innerText = originalText;
+            }
+        }
+        
+        // Форматирование валюты
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+        
+        // Закрыть модаль при клике вне её
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('withdrawModal');
+            if (e.target === modal) {
+                closeWithdrawModal();
+            }
+        });
+        
+        // Инициализировать при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            initDashboard();
+        });
+
+        </script>
+    
+    <!-- Web3 Signature Module (for wallet authentication) -->
+    <script src="/static/web3-signature.js"></script>
+    
+    <!-- Multi-language support -->
+    <script src="/static/translations.js"></script>
+    
+</body>
+</html>

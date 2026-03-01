@@ -1,0 +1,42 @@
+2026-03-01 11:09:46,837 - main - INFO - ✅ Static files mounted from /workspaces/soldia/static
+2026-03-01 11:17:08,235 - main - INFO - ✅ Static files mounted from /workspaces/soldia/static
+2026-03-01 11:21:24,286 - main - INFO - ✅ Static files mounted from /workspaces/soldia/static
+2026-03-01 11:21:24,386 - main - INFO - ✅ API routes registered
+2026-03-01 11:21:24,387 - main - INFO - ============================================================
+2026-03-01 11:21:24,387 - main - INFO - 🚀 Starting SOLDIA v2.8...
+2026-03-01 11:21:24,387 - main - INFO - ============================================================
+2026-03-01 11:21:24,387 - config.settings - INFO - ✅ Configuration validation passed
+2026-03-01 11:21:24,387 - database.manager - INFO - 🔌 Initializing database connection...
+2026-03-01 11:21:24,407 - main - ERROR - Database initialization failed: Pool class QueuePool cannot be used with asyncio engine (Background on this error at: https://sqlalche.me/e/20/pcls)
+2026-03-01 11:23:26,756 - main - INFO - ✅ Static files mounted from /workspaces/soldia/static
+2026-03-01 11:23:26,839 - main - INFO - ✅ API routes registered
+2026-03-01 11:23:26,840 - main - INFO - ============================================================
+2026-03-01 11:23:26,840 - main - INFO - 🚀 Starting SOLDIA v2.8...
+2026-03-01 11:23:26,840 - main - INFO - ============================================================
+2026-03-01 11:23:26,840 - config.settings - INFO - ✅ Configuration validation passed
+2026-03-01 11:23:26,840 - database.manager - INFO - 🔌 Initializing database connection...
+2026-03-01 11:23:26,913 - database.manager - INFO - ✅ Database connection successful
+2026-03-01 11:23:26,913 - main - INFO - ✅ Database initialized
+2026-03-01 11:23:26,914 - cache.manager - INFO - Initializing Redis connection...
+2026-03-01 11:23:26,919 - cache.manager - INFO - ✅ Redis connected
+2026-03-01 11:23:26,919 - main - INFO - ✅ Redis cache initialized
+2026-03-01 11:23:26,923 - main - INFO - ============================================================
+2026-03-01 11:23:26,923 - main - INFO - ✅ SOLDIA v2.8 is ready!
+2026-03-01 11:23:26,923 - main - INFO - 🌍 Environment: development
+2026-03-01 11:23:26,923 - main - INFO - 🔧 Debug mode: False
+2026-03-01 11:23:26,923 - main - INFO - ============================================================
+2026-03-01 11:23:42,958 - main - INFO - GET / - Status: 200 - Duration: 0.007s - IP: 104.28.156.60
+2026-03-01 11:23:43,260 - main - INFO - GET /static/web3-signature.js - Status: 200 - Duration: 0.002s - IP: 104.28.156.60
+2026-03-01 11:23:43,326 - main - INFO - GET /static/translations.js - Status: 200 - Duration: 0.005s - IP: 104.28.156.60
+2026-03-01 11:23:46,905 - main - INFO - GET /favicon.ico - Status: 404 - Duration: 0.000s - IP: 104.28.156.60
+2026-03-01 11:29:06,693 - main - INFO - ============================================================
+2026-03-01 11:29:06,694 - main - INFO - 🛑 Shutting down SOLDIA v2.8...
+2026-03-01 11:29:06,694 - main - INFO - ============================================================
+2026-03-01 11:29:06,694 - database.manager - INFO - 🔌 Closing database connections...
+2026-03-01 11:29:06,695 - database.manager - INFO - ✅ Database connections closed
+2026-03-01 11:29:06,695 - main - INFO - ✅ Database connections closed
+2026-03-01 11:29:06,696 - main - INFO - ✅ Redis connections closed
+2026-03-01 11:29:06,837 - main - INFO - ✅ Solana RPC connection closed
+2026-03-01 11:29:06,837 - main - INFO - ============================================================
+2026-03-01 11:29:06,837 - main - INFO - 👋 SOLDIA v2.8 shutdown complete
+2026-03-01 11:29:06,837 - main - INFO - ============================================================
