@@ -114,7 +114,7 @@ async def validate_withdrawal(
     # 2x rule — only before first withdrawal
     if user.last_withdrawal_at is None:
         threshold = user.deposit_amount * Decimal("2")
-        if user.total_earned < threshold:
+        if (user.total_earned or Decimal("0")) < threshold:
             remaining = threshold - user.total_earned
             return False, (
                 f"Withdrawal locked. Need {threshold} USDC (2x deposit) total earned. "
@@ -124,7 +124,7 @@ async def validate_withdrawal(
     if amount <= Decimal("0"):
         return False, "Amount must be positive."
 
-    available = user.total_earned - user.total_withdrawn
+    available = (user.total_earned or Decimal("0")) - (user.total_withdrawn or Decimal("0"))
     if amount > available:
         return False, f"Insufficient balance. Available: {available} USDC."
 
@@ -383,7 +383,7 @@ async def withdrawal_stats(
     if not user:
         raise HTTPException(status_code=404, detail="User not found.")
 
-    available = user.total_earned - user.total_withdrawn
+    available = (user.total_earned or Decimal("0")) - (user.total_withdrawn or Decimal("0"))
     threshold = user.deposit_amount * Decimal("2")
     remaining = max(Decimal("0"), threshold - user.total_earned)
 
