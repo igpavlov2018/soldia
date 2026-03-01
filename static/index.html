@@ -3239,9 +3239,14 @@ fa: {
             document.getElementById('you-invite').textContent = youInvite;
             document.getElementById('each-invites').textContent = eachInvites;
             
-            document.getElementById('l1-count').textContent = l1 + ' ' + (translations[currentLang]?.people || 'people');
-            document.getElementById('l2-count').textContent = l2 + ' ' + (translations[currentLang]?.people || 'people');
-            document.getElementById('l3-count').textContent = l3 + ' ' + (translations[currentLang]?.people || 'people');
+            const peopleWord = (typeof translations !== 'undefined' && translations[currentLang]?.people) || {
+                'en':'friends','ru':'друзей','es':'amigos','ar':'أصدقاء','hi':'दोस्त',
+                'zh':'朋友','fr':'amis','de':'Freunde','pt':'amigos','id':'teman',
+                'tr':'arkadaş','ko':'친구','it':'amici','uk':'друзів','fa':'دوست','ja':'友達'
+            }[currentLang] || 'friends';
+            document.getElementById('l1-count').textContent = l1 + ' ' + peopleWord;
+            document.getElementById('l2-count').textContent = l2 + ' ' + peopleWord;
+            document.getElementById('l3-count').textContent = l3 + ' ' + peopleWord;
             
             document.getElementById('l1-earn').textContent = '$' + Math.round(l1_earn).toLocaleString();
             document.getElementById('l2-earn').textContent = '$' + Math.round(l2_earn).toLocaleString();
