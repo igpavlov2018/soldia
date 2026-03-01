@@ -3436,3 +3436,27 @@ TypeError: 'async_generator' object does not support the asynchronous context ma
 2026-03-01 15:32:18,642 - security.key_management - INFO - 📧 Sending key rotation notification to admin@soldia.com...
 2026-03-01 15:32:18,643 - security.key_management - INFO - ✅ Key rotation notification sent
 2026-03-01 15:32:18,653 - security.web3_auth - WARNING - Signature wrong length: 65 (need 64)
+2026-03-01 20:08:35,045 - main - INFO - ✅ Static files mounted from /workspaces/soldia/static
+2026-03-01 20:08:35,134 - main - INFO - ✅ API routes registered
+2026-03-01 20:08:35,215 - main - INFO - GET /health - Status: 200 - Duration: 0.000s - IP: 127.0.0.1
+2026-03-01 20:08:35,216 - httpx - INFO - HTTP Request: GET http://test/health "HTTP/1.1 200 OK"
+2026-03-01 20:08:35,224 - main - INFO - POST /api/users/register - Status: 409 - Duration: 0.004s - IP: 127.0.0.1
+2026-03-01 20:08:35,224 - httpx - INFO - HTTP Request: POST http://test/api/users/register "HTTP/1.1 409 Conflict"
+2026-03-01 20:08:35,624 - security.key_management - INFO - ✅ AWS KMS clients initialized (region: us-east-1)
+2026-03-01 20:08:35,625 - security.key_management - INFO - 🔐 Retrieving private key from AWS Parameter Store...
+2026-03-01 20:08:35,625 - security.key_management - INFO - 🔐 Key Access Log: GET /soldia/hot-wallet-private-key - success
+2026-03-01 20:08:35,625 - security.key_management - INFO - ✅ Private key retrieved successfully from Parameter Store
+2026-03-01 20:08:35,625 - security.key_management - INFO -    Last modified: 2026-03-01 20:08:35.625042+00:00
+2026-03-01 20:08:35,643 - security.key_management - INFO - ✅ AWS KMS clients initialized (region: us-east-1)
+2026-03-01 20:08:35,643 - security.key_management - INFO - 🔄 Rotating private key (approved by admin@soldia.com)...
+2026-03-01 20:08:35,644 - security.key_management - INFO - 🔐 Key Access Log: ROTATE /soldia/hot-wallet-private-key - success
+2026-03-01 20:08:35,644 - security.key_management - WARNING - 🚨 SECURITY ALERT: Private key rotated
+   Approver: admin@soldia.com
+   Time: 2026-03-01T20:08:35.644139+00:00
+2026-03-01 20:08:35,644 - security.key_management - INFO - ✅ Private key rotated successfully
+2026-03-01 20:08:35,644 - security.key_management - INFO -    Approved by: admin@soldia.com
+2026-03-01 20:08:35,644 - security.key_management - INFO -    Version: 2
+2026-03-01 20:08:35,644 - security.key_management - INFO -    Time: 2026-03-01 20:08:35.644058+00:00
+2026-03-01 20:08:35,644 - security.key_management - INFO - 📧 Sending key rotation notification to admin@soldia.com...
+2026-03-01 20:08:35,644 - security.key_management - INFO - ✅ Key rotation notification sent
+2026-03-01 20:08:35,664 - security.web3_auth - WARNING - Signature wrong length: 65 (need 64)
